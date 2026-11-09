@@ -1,5 +1,6 @@
 package com.goalstack.dto;
 
+import com.goalstack.entity.Subgoal;
 import com.goalstack.entity.SubgoalStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,4 +27,15 @@ public class SubgoalRequest {
 
     public SubgoalStatus getStatus() { return status; }
     public void setStatus(SubgoalStatus status) { this.status = status; }
+
+    public static SubgoalRequest from(Subgoal subgoal) {
+        SubgoalRequest request = new SubgoalRequest();
+
+        request.setTitle(subgoal.getTitle());
+        request.setDescription(subgoal.getDescription());
+        request.setStatus(subgoal.getStatus());
+
+        return request;
+    }
+
 }

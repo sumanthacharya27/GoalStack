@@ -1,5 +1,5 @@
 package com.goalstack.dto;
-
+import com.goalstack.entity.Goal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -25,4 +25,14 @@ public class GoalRequest {
 
     public LocalDate getDeadline() { return deadline; }
     public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
+
+    public static GoalRequest from(Goal goal) {
+        GoalRequest request = new GoalRequest();
+
+        request.setTitle(goal.getTitle());
+        request.setDescription(goal.getDescription());
+        request.setDeadline(goal.getDeadline());
+
+        return request;
+    }
 }
