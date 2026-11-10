@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /** Runs against an in-memory H2 database (no MySQL needed) to check the mapping and cascade delete. */
 @DataJpaTest
@@ -32,15 +33,32 @@ class GoalSubgoalRepositoryTest {
 
     @Test
     void deletingAGoalRemovesItsSubgoals() {
-        Goal goal = saveGoal("Learn Java");
-        saveSubgoal(goal, "Data Types");
-        saveSubgoal(goal, "Collections");
-        assertThat(subgoalRepository.count()).isEqualTo(2);
 
-        goalRepository.delete(goal);
+        Goal goal = new Goal();
+        goal.setTitle("Learn Spring Boot");
+
+        goalRepository.saveAndFlush(goal);
+
+        Subgoal subgoal1 = new Subgoal();
+        subgoal1.setTitle("Learn Spring Core");
+
+        Subgoal subgoal2 = new Subgoal();
+        subgoal2.setTitle("Learn Spring MVC");
+
+        // Maintain both sides of the relationship
+        goal.addSubgoal(subgoal1);
+        goal.addSubgoal(subgoal2);
+
+        // Save the goal and its subgoals through cascading
+        goalRepository.saveAndFlush(goal);
+
+        assertEquals(2, subgoalRepository.countByGoal_Id(goal.getId()));
+
+        // Delete the parent goal
+        goalRepository.deleteById(goal.getId());
         goalRepository.flush();
 
-        assertThat(subgoalRepository.count()).isZero();
+        assertEquals(0, subgoalRepository.countByGoal_Id(goal.getId()));
     }
 
     private Goal saveGoal(String title) {

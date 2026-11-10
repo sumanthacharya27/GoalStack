@@ -73,4 +73,15 @@ public class Goal {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     public List<Subgoal> getSubgoals() { return Collections.unmodifiableList(subgoals); }
+
+    public void addSubgoal(Subgoal subgoal) {
+        subgoals.add(subgoal);
+        subgoal.setGoal(this);
+    }
+
+    public void removeSubgoal(Subgoal subgoal) {
+        subgoals.remove(subgoal);
+        subgoal.setGoal(null);
+    }
+
 }

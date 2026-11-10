@@ -9,4 +9,6 @@ public interface SubgoalRepository extends JpaRepository<Subgoal, Long> {
 
     // "WHERE goal_id = ? ORDER BY id ASC", derived from the method name.
     List<Subgoal> findByGoalIdOrderByIdAsc(Long goalId);
+
+    long countByGoal_Id(Long goalId);
 }

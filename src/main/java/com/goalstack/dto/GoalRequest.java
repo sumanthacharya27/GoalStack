@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class GoalRequest {
 
     @NotBlank(message = "Title is required.")
-    @Size(max = 120, message = "Title must be 120 characters or fewer.")
+    @Size(max = 120, message = "Title cannot exceed 120 characters")
     private String title;
 
     @Size(max = 5000, message = "Description must be 5000 characters or fewer.")
