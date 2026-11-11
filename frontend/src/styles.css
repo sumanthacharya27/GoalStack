@@ -27,3 +27,5 @@ body { background: var(--gs-bg); color: #1f2937; }
 .gs-pre { white-space: pre-line; }
 .gs-narrow { max-width: 720px; margin: 0 auto; }
 .form-select-sm { min-width: 8.5rem; width: auto; }
+
+.gs-auth { max-width: 460px; }

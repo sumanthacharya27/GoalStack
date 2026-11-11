@@ -54,9 +54,19 @@ public class GlobalExceptionHandler {
     }
 
     /** Thrown by SubgoalStatus.parse for an unsupported status; the message is safe to show. */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex) {
+    @ExceptionHandler(InvalidStatusException.class)
+    public ResponseEntity<ApiError> handleInvalidStatus(InvalidStatusException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    public ResponseEntity<ApiError> handleEmailTaken(EmailAlreadyUsedException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), Map.of("email", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), Map.of());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

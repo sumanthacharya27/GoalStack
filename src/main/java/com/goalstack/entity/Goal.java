@@ -5,12 +5,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,6 +47,13 @@ public class Goal {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // The owner of this goal. Nullable in the database so goals created in Version 1 (before accounts
+    // existed) can still be stored; the service always sets it for new goals.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User user;
+
     // Inverse side of the relationship: the "goal_id" column lives in the subgoals table.
     @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
@@ -57,6 +70,10 @@ public class Goal {
     void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+    /** Marks the goal as changed now. Called when one of its subgoals changes. */
+    public void touch() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() { return id; }
 
@@ -68,6 +85,9 @@ public class Goal {
 
     public LocalDate getDeadline() { return deadline; }
     public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
