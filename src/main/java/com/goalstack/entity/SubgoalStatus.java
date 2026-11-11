@@ -1,4 +1,5 @@
 package com.goalstack.entity;
+import com.goalstack.exception.InvalidStatusException;
 
 public enum SubgoalStatus {
     PENDING("Pending"),
@@ -24,6 +25,7 @@ public enum SubgoalStatus {
                 }
             }
         }
-        throw new IllegalArgumentException("Unsupported status. Use PENDING, IN_PROGRESS or COMPLETED.");
-    }
+        throw new InvalidStatusException(
+                "Unsupported status. Use PENDING, IN_PROGRESS or COMPLETED."
+        );    }
 }

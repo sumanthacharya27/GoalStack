@@ -107,9 +107,11 @@ class GoalSubgoalRepositoryTest {
 
     private Subgoal saveSubgoal(Goal goal, String title, SubgoalStatus status) {
         Subgoal subgoal = new Subgoal();
-        subgoal.setGoal(goal);
         subgoal.setTitle(title);
         subgoal.setStatus(status);
+
+        goal.addSubgoal(subgoal);
+
         return subgoalRepository.saveAndFlush(subgoal);
     }
 }

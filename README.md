@@ -1,101 +1,108 @@
-# GoalStack
+# GoalStack (Version 2)
 
-A goal management web app. Create goals, split them into subgoals, set optional deadlines, and see progress calculated automatically.
+A goal management web app with user accounts. Each user creates goals, splits them into subgoals, sets optional deadlines, and sees progress calculated automatically. Users only see their own goals.
 
-- **Backend:** Spring Boot REST API (Java 21) + MySQL
+- **Backend:** Spring Boot REST API (Java 21) + MySQL + Spring Security with JWT login tokens
 - **Frontend:** React (Vite) single-page app in `frontend/`
 
 ## Problem statement
-Large goals are hard to finish when they are not broken into small steps. GoalStack lets one user organise goals into subgoals, track the status of each step, and see overall progress at a glance.
+Large goals are hard to finish when they are not broken into small steps. GoalStack lets each person organise goals into subgoals, track the status of each step, and see overall progress at a glance.
 
-## Features (implemented in Version 1)
-- Create, view, edit and delete goals (title, optional description, optional deadline)
+## Features
+**Version 1 (still included)**
+- Create, view, edit and delete goals (title, optional description, optional deadline); deleting a goal deletes its subgoals
 - Add, edit, delete subgoals and change their status (Pending, In progress, Completed)
-- Progress calculated on the fly: `completed subgoals / total subgoals x 100` (rounded down)
-- A goal is complete only when it has at least one subgoal and all are completed
-- Overdue indicator (deadline before today and goal not complete)
-- Dashboard with goal cards, progress bars, loading and empty states
-- Server-side validation (required title, max 120 characters); messages shown under the field, entered values kept
-- Clean JSON errors for missing goals/subgoals and unexpected errors (no stack traces)
-- Confirmation prompt before deleting
-- Deleting a goal deletes its subgoals
+- Progress = completed subgoals / total subgoals x 100 (rounded down), calculated on the server and never stored
+- Complete only when there is at least one subgoal and all are completed; Overdue when the deadline has passed and the goal is not complete
+- Dashboard with goal cards, progress bars, title search, status filter, loading and empty states
+- Server-side validation with messages under each field; clean JSON errors; delete confirmations
 
-Not included in V1: login, nested subgoals, notifications, analytics, AI features.
+**New in Version 2**
+- Register, log in and log out (passwords stored as BCrypt hashes; login uses a JWT token)
+- Every goal belongs to one user; other users' goals and subgoals return "not found"
+- React login and register pages, pages that need login, user name and Log out in the navbar, automatic logout when the token expires
+- Run everything from one jar (Spring Boot serves the React app) or with Docker Compose
+
+Not included: refresh tokens, password reset, email verification, roles, rate limiting, nested subgoals, notifications.
 
 ## Technology stack
-Java 21, Spring Boot 3.5.x, Maven, Spring Web MVC (REST), Spring Data JPA (Hibernate), MySQL 8, Jakarta Bean Validation, JUnit 5 and Mockito, React 18, React Router 6, Vite, Bootstrap 5 (npm package), Node.js 20+.
+Java 21, Spring Boot 3.5.x, Maven, Spring Web MVC (REST), Spring Data JPA (Hibernate), Spring Security (OAuth2 resource server for JWT), MySQL 8, Jakarta Bean Validation, JUnit 5 and Mockito, React 18, React Router 6, Vite, Bootstrap 5, Node.js 20+, Docker (optional).
 
 ## Architecture
 ```
-React (browser) --JSON over HTTP--> Controller -> Service -> Repository -> MySQL
+React (browser) --JSON + Bearer token--> Security filter -> Controller -> Service -> Repository -> MySQL
 ```
 
 | Package / folder | Purpose |
 |---|---|
-| `controller` | REST endpoints under `/api`; receive JSON, call services, return JSON |
-| `service` | All business rules (progress, complete, overdue, parent-child checks) |
-| `repository` | Spring Data JPA interfaces that talk to the database |
-| `entity` | `Goal`, `Subgoal`, `SubgoalStatus` mapped to tables |
-| `dto` | Request bodies (`GoalRequest`, `SubgoalRequest`, `StatusRequest`), responses (`GoalResponse`, `SubgoalResponse`) and `GoalView` |
-| `exception` | `ResourceNotFoundException`, `ApiError`, and the global JSON error handler |
+| `security` | `SecurityConfig` (who may call what), `JwtConfig` (signing key, token encoder/decoder), `CurrentUser` |
+| `controller` | REST endpoints (`AuthController`, `GoalController`, `SubgoalController`) and `SpaController` |
+| `service` | Business rules: `GoalService`, `SubgoalService`, `AuthService`, `JwtService` |
+| `repository` | Spring Data JPA interfaces; goal and subgoal queries always include the user id |
+| `entity` | `User`, `Goal`, `Subgoal`, `SubgoalStatus` |
+| `dto` | Request and response JSON classes |
+| `exception` | Custom exceptions and the global JSON error handler |
+| `frontend/src/auth` | `AuthContext` (who is logged in) and `ProtectedRoute` |
 | `frontend/src/pages` | One React component per screen |
-| `frontend/src/api.js` | The only file that calls the backend |
+| `frontend/src/api.js` | The only file that calls the backend; adds the token to each request |
 
-In development the React dev server (port 5173) forwards `/api` requests to Spring Boot (port 8080) using the proxy in `frontend/vite.config.js`, so no CORS setup is needed.
+## How login works
+1. `POST /api/auth/register` or `/api/auth/login` returns a token (a signed JWT whose subject is the user id).
+2. React stores the token in the browser's `localStorage` and sends `Authorization: Bearer <token>` with every request.
+3. Spring Security checks the signature and expiry. Controllers read the user id from the token and pass it to services.
+4. Every goal and subgoal query includes that user id, so a user can never reach someone else's data (a foreign id looks like a missing one).
+5. When the token expires, the API answers 401 and React sends the user to the login page.
 
 ## REST API
-| Method | URL | Purpose |
-|---|---|---|
-| GET | `/api/goals` | All goals with progress (no subgoal list) |
-| POST | `/api/goals` | Create a goal (201) |
-| GET | `/api/goals/{id}` | One goal with its subgoals |
-| PUT | `/api/goals/{id}` | Update a goal |
-| DELETE | `/api/goals/{id}` | Delete a goal and its subgoals (204) |
-| POST | `/api/goals/{goalId}/subgoals` | Add a subgoal (always starts PENDING) |
-| GET | `/api/subgoals/{id}` | One subgoal |
-| PUT | `/api/subgoals/{id}` | Update title, description, status |
-| PATCH | `/api/subgoals/{id}/status` | Body `{"status":"COMPLETED"}` |
-| DELETE | `/api/subgoals/{id}` | Delete a subgoal (204) |
+| Method | URL | Login needed | Purpose |
+|---|---|---|---|
+| POST | `/api/auth/register` | no | Create an account (201). Body: `name`, `email`, `password` |
+| POST | `/api/auth/login` | no | Log in. Body: `email`, `password` |
+| GET | `/api/auth/me` | yes | The logged-in user |
+| GET | `/api/goals` | yes | Your goals with progress (no subgoal list) |
+| POST | `/api/goals` | yes | Create a goal (201) |
+| GET | `/api/goals/{id}` | yes | One goal with its subgoals |
+| PUT | `/api/goals/{id}` | yes | Update a goal |
+| DELETE | `/api/goals/{id}` | yes | Delete a goal and its subgoals (204) |
+| POST | `/api/goals/{goalId}/subgoals` | yes | Add a subgoal (always starts PENDING) |
+| GET | `/api/subgoals/{id}` | yes | One subgoal |
+| PUT | `/api/subgoals/{id}` | yes | Update title, description, status |
+| PATCH | `/api/subgoals/{id}/status` | yes | Body `{"status":"COMPLETED"}` |
+| DELETE | `/api/subgoals/{id}` | yes | Delete a subgoal (204) |
 
-Dates use `yyyy-MM-dd`. Errors look like `{"status":400,"message":"...","fieldErrors":{"title":"Title is required."}}`.
+Dates use `yyyy-MM-dd`. Errors look like `{"status":400,"message":"...","fieldErrors":{"title":"Title is required."}}`. Without a valid token, `/api/**` (except register and login) answers 401. Duplicate email answers 409, wrong login answers 401.
 
 ## Database
-Two tables, created automatically by Hibernate (`spring.jpa.hibernate.ddl-auto=update`). An optional manual script is in `database/schema.sql`. Spring's own SQL initialisation is off (`spring.sql.init.mode=never`) so the two approaches never clash.
+Three tables, created or updated automatically by Hibernate (`spring.jpa.hibernate.ddl-auto=update`). A manual script is in `database/schema.sql`. Spring's own SQL initialisation is off (`spring.sql.init.mode=never`).
 
-- `goals(id, title, description, deadline, created_at, updated_at)`
+- `users(id, name, email UNIQUE, password_hash, created_at)`
+- `goals(id, user_id, title, description, deadline, created_at, updated_at)`
 - `subgoals(id, goal_id, title, description, status, created_at, updated_at)`
-- One goal has many subgoals; each subgoal belongs to one goal.
-- `subgoals.goal_id` is a foreign key with `ON DELETE CASCADE` and an index.
-- Progress is never stored; it is calculated from subgoal statuses.
-- Hibernate creates timestamp columns as `datetime(6)`; the manual `schema.sql` uses plain `DATETIME`.
-- `status` is `VARCHAR(20) NOT NULL DEFAULT 'PENDING'`. Allowed values are enforced by the application (enum). The manual `schema.sql` also adds a `CHECK` constraint.
+- A user has many goals; a goal has many subgoals. Both foreign keys use `ON DELETE CASCADE`.
+- `goals.user_id` is nullable in the database so Version 1 goals can still be stored; the app always sets it for new goals.
+- Progress is never stored.
 
 ## Prerequisites (Windows)
-- JDK 21 (`java -version`)
-- Maven 3.9+ (`mvn -v`), or IntelliJ IDEA which bundles Maven
-- Node.js 20+ and npm (`node -v`)
-- MySQL 8 running locally
-
-## Database setup
-Nothing required: the default URL has `createDatabaseIfNotExist=true`, so the `goalstack` database is created on first start. Or create it yourself: `mysql -u root -p < database\schema.sql`
+- JDK 21 (`java -version`), Maven 3.9+ (`mvn -v`), Node.js 20+ (`node -v`), MySQL 8 running locally
+- Docker Desktop (only for the Docker option)
 
 ## Configuration
-`src/main/resources/application.properties` reads:
-
 | Variable | Default | Meaning |
 |---|---|---|
-| `DB_URL` | `jdbc:mysql://localhost:3306/goalstack?...` | JDBC URL |
+| `DB_URL` | `jdbc:mysql://localhost:3306/goalstack?...` | JDBC URL (database is created if missing) |
 | `DB_USERNAME` | `root` | MySQL user |
 | `DB_PASSWORD` | *(empty)* | MySQL password |
+| `JWT_SECRET` | *(empty)* | Signs login tokens, at least 32 characters. If empty, a random one is made at startup and everyone is logged out on each restart |
+| `JWT_EXPIRY_MINUTES` | `120` | How long a login lasts |
 
-The empty default password only works if your local MySQL user has none. Set `DB_PASSWORD` otherwise. Never commit real passwords. `.env.example` lists the variables, but Spring Boot does not read `.env` files.
+Never commit real passwords or secrets. `.env.example` lists the variables; Spring Boot does not read `.env` files, but Docker Compose does.
 
-## Run on Windows (two terminals)
+## Run option 1: development (two terminals)
 **Terminal 1: backend**
 ```powershell
 cd goalstack
-$env:DB_USERNAME = "root"
 $env:DB_PASSWORD = "your_mysql_password"
+$env:JWT_SECRET = "replace-this-with-a-long-random-text-32-chars-or-more"
 mvn spring-boot:run
 ```
 **Terminal 2: frontend**
@@ -104,42 +111,51 @@ cd goalstack\frontend
 npm install
 npm run dev
 ```
-Open http://localhost:5173. (The backend alone on http://localhost:8080 serves only the API; try http://localhost:8080/api/goals.)
+Open http://localhost:5173, register an account, and start adding goals. (The dev server forwards `/api` to port 8080.)
 
-Run backend tests: `mvn test` (no MySQL needed; the repository test uses in-memory H2).
-Build backend jar: `mvn clean package`. Build frontend: `cd frontend && npm run build` (output in `frontend/dist`).
+## Run option 2: one jar
+```powershell
+cd goalstack
+.\build-single-jar.ps1
+$env:DB_PASSWORD = "your_mysql_password"
+$env:JWT_SECRET = "replace-this-with-a-long-random-text-32-chars-or-more"
+java -jar target\goalstack-0.2.0-SNAPSHOT.jar
+```
+Open http://localhost:8080. If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process Bypass` first.
 
-There is no Maven wrapper (`mvnw`). Install Maven, or open the folder in IntelliJ IDEA and run `GoalStackApplication`.
+## Run option 3: Docker Compose
+```powershell
+copy .env.example .env     # then edit DB_PASSWORD and JWT_SECRET in .env
+docker compose up --build
+```
+Open http://localhost:8080. MySQL data is kept in a Docker volume.
 
-## Example usage
-1. Click **Add Goal**, enter "Learn Java", save.
-2. Click **Add Subgoal** five times: Data Types, Variables and Operators, Classes and Objects, Exception Handling, Collections Framework.
-3. Set the first two to **Completed**: the goal shows 2 of 5 and 40%.
-4. Set one back to **In progress**: progress drops to 20%.
+## Tests
+`mvn test` runs 42 tests (no MySQL needed; the repository test uses in-memory H2).
 
-## Screenshots
-Add your own to `docs/screenshots/` after running the app, then link them here: `dashboard.png`, `goal-details.png`.
+## Upgrading from Version 1
+1. Start the new version. Hibernate adds the `users` table and the `goals.user_id` column.
+2. Register an account in the app.
+3. Your old goals have no owner and are invisible. Edit the email in `database\claim_v1_goals.sql`, then run `mysql -u root -p goalstack < database\claim_v1_goals.sql`.
+4. If you do not need the old data, you can instead drop the `goalstack` database and let the app recreate it.
 
-## Manual test checklist
-1. Create a goal, see it on the dashboard, edit it.
-2. Add subgoals, mark one Completed, check the percentage.
-3. Change Completed to In progress: progress decreases.
-4. Add and delete subgoals: progress changes.
-5. No subgoals shows 0%; all completed shows 100% and a Completed badge.
-6. Past deadline on an incomplete goal shows Overdue; completing all subgoals removes it.
-7. Delete a goal, then in MySQL: `SELECT COUNT(*) FROM subgoals WHERE goal_id = <id>;` returns 0.
-8. Restart the backend: data is still there.
-9. Server-side validation (the browser's `required` check blocks an empty title, so call the API directly):
-   `curl.exe -i -X POST -H "Content-Type: application/json" -d "{\"title\":\"\"}" http://localhost:8080/api/goals` should return 400 with `fieldErrors.title`.
-10. Open `http://localhost:8080/api/goals/9999` and `http://localhost:8080/api/subgoals/9999`: 404 JSON. In the React app, `/goals/9999` shows an error message.
+## Try the API from PowerShell
+```powershell
+$body = @{ name = "Asha"; email = "asha@example.com"; password = "password123" } | ConvertTo-Json
+$r = Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/auth/register -ContentType "application/json" -Body $body
+$headers = @{ Authorization = "Bearer $($r.token)" }
+Invoke-RestMethod http://localhost:8080/api/goals -Headers $headers      # works: []
+Invoke-WebRequest http://localhost:8080/api/goals                         # no token: 401
+```
 
-## Known limitations
-- Single user, no login
-- In production you must serve `frontend/dist` yourself; Spring Boot does not host it yet
-- No pagination, search or sorting on the dashboard
-- Subgoals cannot be reordered
-- The "overdue" rule uses the server's date
-- No frontend automated tests
+## Security notes and limitations
+- Passwords are stored as BCrypt hashes and must be 8 to 72 characters. Login errors do not say whether the email exists.
+- The token is kept in `localStorage`. That is simple, but any script injected into the page could read it. React escapes text by default, which helps. Cookies with refresh tokens are a stronger design.
+- No refresh tokens: when the token expires the user logs in again.
+- No password reset, email verification, account deletion, rate limiting or lockout.
+- Registration says when an email is already taken, so emails can be checked for existence.
+- Without `JWT_SECRET`, logins reset on every restart. Always set it outside quick local testing.
+- The overdue rule uses the server's date. No pagination or sorting on the dashboard. No frontend automated tests.
 
 ## Future enhancements
-Authentication and per-user goals, serving the React build from Spring Boot, subgoal ordering, search and filters, Flyway migrations, Docker setup, deployment.
+Refresh tokens and password reset, rate limiting, Flyway migrations, subgoal deadlines or ordering, frontend tests, cloud deployment.
