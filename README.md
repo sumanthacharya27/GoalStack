@@ -1,236 +1,364 @@
-# GoalStack (Version 3, phases 1 and 2: effort-weighted progress + AI foundation)
+# GoalStack
 
-A goal management web app with user accounts. Each user creates goals, splits them into subgoals, sets optional deadlines, and sees progress calculated automatically. Users only see their own goals.
+GoalStack is a goal-management application that helps users break larger
+goals into smaller, manageable subgoals, schedule those subgoals, and
+track progress based on the effort assigned to each task.
 
-- **Backend:** Spring Boot REST API (Java 21) + MySQL + Spring Security with JWT login tokens
-- **Frontend:** React (Vite) single-page app in `frontend/`
-
-## Problem statement
-Large goals are hard to finish when they are not broken into small steps. GoalStack lets each person organise goals into subgoals, track the status of each step, and see overall progress at a glance.
+The project uses a Spring Boot REST API for the backend and a React
+application for the frontend.
 
 ## Features
-**Version 1 (still included)**
-- Create, view, edit and delete goals (title, optional description, optional deadline); deleting a goal deletes its subgoals
-- Add, edit, delete subgoals and change their status (Pending, In progress, Completed)
-- Progress is calculated on the server and never stored (see "How progress works" below)
-- Complete only when there is at least one subgoal and all are completed; Overdue when the deadline has passed and the goal is not complete
-- Dashboard with goal cards, progress bars, title search, status filter, loading and empty states
-- Server-side validation with messages under each field; clean JSON errors; delete confirmations
 
-**New in Version 2**
-- Register, log in and log out (passwords stored as BCrypt hashes; login uses a JWT token)
-- Every goal belongs to one user; other users' goals and subgoals return "not found"
-- React login and register pages, pages that need login, user name and Log out in the navbar, automatic logout when the token expires
-- Run everything from one jar (Spring Boot serves the React app) or with Docker Compose
+### Goal and subgoal management
 
-**New in Version 3, phase 1**
-- Effort-weighted progress: each subgoal of a new goal has estimated hours (0.25 to 1000, at most 50 subgoals per goal); its weight is its share of the total hours, and progress is the sum of the weights of completed subgoals
-- Weights are calculated on the server, always total exactly 100.00%, and are recalculated when a subgoal is added, deleted or its hours change
-- Goals made before Version 3 keep equal weights forever (no hours); the app tells you so on the goal page
-- Database changes are now managed by Flyway migration files instead of Hibernate `update`
-  **New in Version 3, phase 2 (AI foundation, no chat screens yet)**
-- A provider-independent AI layer: the app talks to an `AIProvider` interface, never to a vendor library
-- Two providers: `fake` (built-in demo, the default) and `ollama` (a real model running on your own PC)
-- Structured output: JSON Schemas for assistant turns and plans, strict parsing and validation of everything the model returns, one automatic "please fix your answer" retry
-- Timeouts, error mapping (503, 504, 429, 502 with a `code` such as `AI_UNAVAILABLE`) and bounded retries
-- `GET /api/ai/status` (login required) shows whether the AI is usable
-- Planned next (not built yet): saved chat sessions, plan generation, draft review, React chat screens
+-   Create, view, update, and delete goals.
+-   Break goals into smaller subgoals.
+-   Track subgoal status (for example, Pending, In Progress, and
+    Completed).
+-   Assign estimated effort to subgoals.
+-   Calculate goal progress using effort-based weighting.
+-   Assign an optional target date to each subgoal.
 
-Not included: refresh tokens, password reset, email verification, roles, rate limiting, nested subgoals, notifications.
+### Authentication and ownership
+
+-   User registration and login.
+-   JWT-based authentication for protected API requests.
+-   Users access their own goals and associated subgoals.
+
+### Calendar
+
+-   View scheduled subgoals in day, week, and month views.
+-   Navigate between dates and return to Today.
+-   Select a date to view its scheduled subgoals.
+-   Complete or reopen a subgoal from the calendar.
+-   Calendar entries are based on each subgoal's `targetDate`.
+
+Subgoals without a target date are not displayed in the calendar.
+
+### AI Goal Planner
+
+The project includes an AI planning foundation and a planner interface.
+The AI provider can be configured to use either the scripted `fake`
+provider or the local Ollama provider.
+
+The intended AI planning workflow is: 1. Describe a goal. 2. Answer
+relevant follow-up questions. 3. Generate a structured goal and subgoal
+draft. 4. Review and edit the draft. 5. Save the goal and subgoals to
+GoalStack.
+
+**AI implementation status:** The fake provider is suitable for
+demonstrating the workflow but does not generate genuinely intelligent
+responses. To use a real local language model, configure and verify
+Ollama as described below. Conversational plan revision and any
+additional AI capabilities should be considered complete only after they
+have been implemented and tested in the current branch.
 
 ## Technology stack
-Java 21, Spring Boot 3.5.x, Maven, Spring Web MVC (REST), Spring Data JPA (Hibernate), Spring Security (OAuth2 resource server for JWT), MySQL 8, Jakarta Bean Validation, JUnit 5 and Mockito, React 18, React Router 6, Vite, Bootstrap 5, Node.js 20+, Docker (optional).
 
-## Architecture
+### Backend
+
+-   Java 21
+-   Spring Boot
+-   Spring MVC / REST APIs
+-   Spring Security
+-   JWT authentication
+-   Spring Data JPA / Hibernate
+-   MySQL
+-   Maven
+-   Flyway database migrations
+-   JUnit 5 and Mockito for tests
+
+### Frontend
+
+-   React
+-   Vite
+-   React Router
+-   JavaScript
+-   CSS / Bootstrap (as used by the project)
+
+### Local AI
+
+-   Ollama
+-   Configurable AI provider (`fake` or `ollama`)
+-   Structured AI response parsing and validation
+
+## Prerequisites
+
+Install the following before running the application:
+
+-   JDK 21
+-   Maven
+-   Node.js and npm
+-   MySQL 8 (or a compatible MySQL version)
+-   Git
+
+For real local AI generation, also install: - Ollama - The model
+configured for the application (the example below uses `llama3.1:8b`)
+
+## Project structure
+
+The repository is organized approximately as follows:
+
+``` text
+GoalStack/
+├── frontend/
+│   └── src/
+│       ├── components/
+│       ├── pages/
+│       ├── api.js
+│       └── utils.js
+├── src/
+│   ├── main/
+│   │   ├── java/com/goalstack/
+│   │   │   ├── ai/
+│   │   │   ├── controller/
+│   │   │   ├── dto/
+│   │   │   ├── entity/
+│   │   │   ├── repository/
+│   │   │   └── service/
+│   │   └── resources/
+│   │       ├── db/migration/
+│   │       └── application.properties
+│   └── test/
+├── scripts/
+├── docs/
+├── pom.xml
+└── README.md
 ```
-React (browser) --JSON + Bearer token--> Security filter -> Controller -> Service -> Repository -> MySQL
+
+Exact packages and files may vary slightly by branch.
+
+## Database setup
+
+1.  Start MySQL.
+2.  Create a database for GoalStack:
+
+``` sql
+CREATE DATABASE goalstack;
 ```
 
-| Package / folder | Purpose |
-|---|---|
-| `security` | `SecurityConfig` (who may call what), `JwtConfig` (signing key, token encoder/decoder), `CurrentUser` |
-| `controller` | REST endpoints (`AuthController`, `GoalController`, `SubgoalController`) and `SpaController` |
-| `service` | Business rules: `GoalService`, `SubgoalService`, `AuthService`, `JwtService` |
-| `repository` | Spring Data JPA interfaces; goal and subgoal queries always include the user id |
-| `entity` | `User`, `Goal`, `Subgoal`, `SubgoalStatus` |
-| `dto` | Request and response JSON classes |
-| `exception` | Custom exceptions and the global JSON error handler |
-| `frontend/src/auth` | `AuthContext` (who is logged in) and `ProtectedRoute` |
-| `frontend/src/pages` | One React component per screen |
-| `frontend/src/api.js` | The only file that calls the backend; adds the token to each request |
+3.  Configure the database connection in
+    `src/main/resources/application.properties` or through the
+    environment variables supported by your configuration.
 
-## How login works
-1. `POST /api/auth/register` or `/api/auth/login` returns a token (a signed JWT whose subject is the user id).
-2. React stores the token in the browser's `localStorage` and sends `Authorization: Bearer <token>` with every request.
-3. Spring Security checks the signature and expiry. Controllers read the user id from the token and pass it to services.
-4. Every goal and subgoal query includes that user id, so a user can never reach someone else's data (a foreign id looks like a missing one).
-5. When the token expires, the API answers 401 and React sends the user to the login page.
+Example connection properties:
 
-## REST API
-| Method | URL | Login needed | Purpose |
-|---|---|---|---|
-| POST | `/api/auth/register` | no | Create an account (201). Body: `name`, `email`, `password` |
-| POST | `/api/auth/login` | no | Log in. Body: `email`, `password` |
-| GET | `/api/auth/me` | yes | The logged-in user |
-| GET | `/api/goals` | yes | Your goals with progress (no subgoal list) |
-| POST | `/api/goals` | yes | Create a goal (201) |
-| GET | `/api/goals/{id}` | yes | One goal with its subgoals |
-| PUT | `/api/goals/{id}` | yes | Update a goal |
-| DELETE | `/api/goals/{id}` | yes | Delete a goal and its subgoals (204) |
-| POST | `/api/goals/{goalId}/subgoals` | yes | Add a subgoal (always starts PENDING) |
-| GET | `/api/subgoals/{id}` | yes | One subgoal |
-| PUT | `/api/subgoals/{id}` | yes | Update title, description, status |
-| PATCH | `/api/subgoals/{id}/status` | yes | Body `{"status":"COMPLETED"}` |
-| DELETE | `/api/subgoals/{id}` | yes | Delete a subgoal (204) |
+``` properties
+spring.datasource.url=jdbc:mysql://localhost:3306/goalstack
+spring.datasource.username=YOUR_MYSQL_USERNAME
+spring.datasource.password=YOUR_MYSQL_PASSWORD
+```
 
-Dates use `yyyy-MM-dd`. Errors look like `{"status":400,"message":"...","fieldErrors":{"title":"Title is required."}}`. Without a valid token, `/api/**` (except register and login) answers 401. Duplicate email answers 409, wrong login answers 401.
+Replace the placeholders with your local MySQL credentials. Do not
+commit real passwords or secrets to Git.
 
-## How progress works
-- **New goals (EFFORT):** weight of a subgoal = its hours / total hours of the goal x 100. Example: hours 10, 25, 15, 35, 15 give weights 10, 25, 15, 35, 15. If the first two are completed, progress is 35%, not 40%.
-- **Older goals (EQUAL):** every subgoal has the same weight (3 subgoals: 33.34, 33.33, 33.33).
-- Weights use exact whole hundredths of a percent with the largest-remainder rule: everybody gets the rounded-down value, and the leftover hundredths go to the biggest remainders (ties: the earlier subgoal). So the weights always total exactly 100.00 and the same input always gives the same output.
-- Progress = sum of the weights of COMPLETED subgoals. IN_PROGRESS does not count. All completed gives exactly 100.00. The screen shows it rounded down to one decimal.
-- A goal is complete only with at least one subgoal and all of them completed. Overdue works as before.
-- Edge case: a very small subgoal next to very large ones (for example 0.25 hours among 49 subgoals of 1000 hours) can get a weight of 0.00%.
+### Database migrations
 
-## Database
-Three tables. The structure is managed by **Flyway**: the files in `src/main/resources/db/migration` run in order on startup (`V1` creates the Version 2 tables for a brand new database, `V2` adds the weighted-progress columns). Hibernate no longer changes tables (`ddl-auto=none`). Set the environment variable `DDL_AUTO=validate` to make Hibernate double-check entities against tables while developing. `database/schema.sql` is a manual copy of the final schema. Spring's own SQL initialisation is off.
+The project uses Flyway for schema migrations. The calendar change adds
+an optional `target_date` column to the `subgoals` table.
 
-- `users(id, name, email UNIQUE, password_hash, created_at)`
-- `goals(id, user_id, title, description, deadline, weighting_mode, created_at, updated_at)`: `weighting_mode` is EQUAL for goals made before Version 3, EFFORT for new goals
-- `subgoals(id, goal_id, title, description, status, estimated_hours, weight, sort_order, created_at, updated_at)`: `estimated_hours` is empty for older goals; `weight` and `sort_order` are always set
-- A user has many goals; a goal has many subgoals. Both foreign keys use `ON DELETE CASCADE`.
-- `goals.user_id` is nullable in the database so Version 1 goals can still be stored; the app always sets it for new goals.
-- Progress is never stored.
+Allow Flyway to apply pending migrations when the application starts. Do
+not manually add a column that an unapplied migration is already
+responsible for creating.
 
-## Prerequisites (Windows)
-- JDK 21 (`java -version`), Maven 3.9+ (`mvn -v`), Node.js 20+ (`node -v`), MySQL 8 running locally
-- Docker Desktop (only for the Docker option)
+To verify the column in MySQL:
 
-## Configuration
-| Variable | Default | Meaning |
-|---|---|---|
-| `DB_URL` | `jdbc:mysql://localhost:3306/goalstack?...` | JDBC URL (database is created if missing) |
-| `DB_USERNAME` | `root` | MySQL user |
-| `DB_PASSWORD` | *(empty)* | MySQL password |
-| `JWT_SECRET` | *(empty)* | Signs login tokens, at least 32 characters. If empty, a random one is made at startup and everyone is logged out on each restart |
-| `JWT_EXPIRY_MINUTES` | `120` | How long a login lasts |
+``` sql
+SHOW COLUMNS FROM subgoals LIKE 'target_date';
+```
 
-Never commit real passwords or secrets. `.env.example` lists the variables; Spring Boot does not read `.env` files, but Docker Compose does.
+## Running the backend
 
-## Run option 1: development (two terminals)
-**Terminal 1: backend**
-```powershell
-cd goalstack
-$env:DB_PASSWORD = "your_mysql_password"
-$env:JWT_SECRET = "replace-this-with-a-long-random-text-32-chars-or-more"
+Open a terminal in the repository root.
+
+Run the tests:
+
+``` powershell
+mvn clean test
+```
+
+Start Spring Boot:
+
+``` powershell
 mvn spring-boot:run
 ```
-**Terminal 2: frontend**
-```powershell
-cd goalstack\frontend
+
+The backend uses the port configured in the Spring Boot application
+properties (commonly `8080`).
+
+## Running the frontend
+
+Open a second terminal:
+
+``` powershell
+cd frontend
 npm install
 npm run dev
 ```
-Open http://localhost:5173, register an account, and start adding goals. (The dev server forwards `/api` to port 8080.)
 
-## Run option 2: one jar
-```powershell
-cd goalstack
-.\build-single-jar.ps1
-$env:DB_PASSWORD = "your_mysql_password"
-$env:JWT_SECRET = "replace-this-with-a-long-random-text-32-chars-or-more"
-java -jar target\goalstack-0.3.0-SNAPSHOT.jar
+Vite prints the local frontend URL in the terminal (commonly
+`http://localhost:5173`).
+
+For a production build:
+
+``` powershell
+npm run build
 ```
-Open http://localhost:8080. If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process Bypass` first.
 
-## Run option 3: Docker Compose
-```powershell
-copy .env.example .env     # then edit DB_PASSWORD and JWT_SECRET in .env
-docker compose up --build
+## Configuring Ollama
+
+The application can use the fake provider by default. To use the local
+Ollama provider, first make sure Ollama is installed and running.
+
+Check installed models:
+
+``` powershell
+ollama list
 ```
-Open http://localhost:8080. MySQL data is kept in a Docker volume.
 
-## Tests
-`mvn test` runs 135 tests (no MySQL needed; the repository test uses in-memory H2 with Flyway switched off, because the migration files are written for MySQL).
+Download the example model if it is not installed:
 
-## AI assistant setup (Version 3, phase 2)
-**Which provider?** The code supports `fake` and `ollama`. You chose a local model with Ollama. Why that fits:
-- It is free to use, runs on your own PC, needs no API key, and your goals never leave your machine.
-- Trade-offs: it needs enough RAM (or a GPU), the first answer is slow while the model loads, and small models follow the JSON format less reliably than big hosted models. GoalStack validates every answer and asks the model to fix a bad one once.
-- Hosted AI services (paid or free-tier) are not implemented. Because the app only knows the `AIProvider` interface, a hosted adapter can be added later without touching the planning code. Check each vendor's current pricing and limits before choosing one.
+``` powershell
+ollama pull llama3.1:8b
+```
 
-**Try it without any model (default):** the app starts with `AI_PROVIDER=fake`. Log in and open `/api/ai/status` (see below): it answers "Demo mode".
+Check that Ollama is responding:
 
-**Use a real local model:**
-1. Install Ollama for Windows from ollama.com and start it (it runs in the background).
-2. Download a model in a terminal, for example: `ollama pull llama3.1:8b`. As a rough guide an 8B model wants about 8 GB of free memory; if your PC has less, try a smaller model such as `llama3.2:3b` (it is weaker at following the format). Check with `ollama list`.
-3. Test the model on its own with `.\scripts\ollama-smoke-test.ps1 -Model "llama3.1:8b"` (not yet run by me; it prints the plan JSON and checks the hours).
-4. Start GoalStack with the real provider:
-```powershell
+``` powershell
+Invoke-RestMethod http://localhost:11434/api/tags
+```
+
+If Ollama is already running, do not start a second server. A
+port-in-use error on `127.0.0.1:11434` usually means another Ollama
+process is already listening.
+
+Set the provider and model in the same PowerShell terminal used to start
+Spring Boot:
+
+``` powershell
 $env:AI_PROVIDER = "ollama"
 $env:OLLAMA_MODEL = "llama3.1:8b"
 mvn spring-boot:run
 ```
-5. Check the status (after logging in and getting a token as shown in "Try the API from PowerShell"):
-```powershell
-Invoke-RestMethod http://localhost:8080/api/ai/status -Headers $headers
-```
-`availability` is `AVAILABLE` (ready), `MODEL_MISSING` (run `ollama pull`), `UNREACHABLE` (Ollama is not running), or `DEMO` (fake provider).
 
-**AI settings** (environment variables):
-| Variable | Default | Meaning |
-|---|---|---|
-| `AI_PROVIDER` | `fake` | `fake` or `ollama` |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Where Ollama listens |
-| `OLLAMA_MODEL` | `llama3.1:8b` | Model name exactly as shown by `ollama list` |
-| `OLLAMA_NUM_CTX` | `8192` | Context size in tokens (sent on every call so long chats are not silently cut) |
-| `OLLAMA_API_KEY` | empty | Only for an Ollama behind a gateway; stays on the backend |
-| `AI_READ_TIMEOUT` | `120s` | How long to wait for an answer (first call is slowest) |
-| `AI_FAKE_FAILURE` | `NONE` | Makes the fake AI fail on purpose: `UNAVAILABLE`, `RATE_LIMITED`, `TIMEOUT`, `BAD_JSON` |
+To use the scripted provider instead:
 
-**How model answers are treated:** all model output is untrusted. It must be JSON, must match the schema, and must pass the same limits as manual input (title up to 120 characters, hours 0.25 to 1000 with at most 2 decimals, at most 50 subgoals). Prompts and answers are not written to the log. The model never gets database access, and it never decides weights or deadlines: the backend calculates those.
-
-**AI errors** look like normal errors plus a `code`: `AI_UNAVAILABLE` (503), `AI_TIMEOUT` (504), `AI_RATE_LIMITED` (429), `AI_BAD_RESPONSE` (502), `AI_NOT_CONFIGURED` (503), `AI_REQUEST_REJECTED` (502). Manual goal management keeps working whatever the AI does.
-
-## Upgrading an existing database
-Back up first: `mysqldump -u root -p goalstack > backup.sql`
-
-- **Your database was created by Version 1** (no `users` table): run `mysql -u root -p goalstack < database\upgrade_v1_to_v2.sql` once, start the app, register an account, then run `database\claim_v1_goals.sql` (edit the email inside) so your old goals belong to that account.
-- **Your database was created by Version 2:** just start the app. Flyway marks it as version 1 and adds the new columns. Every existing goal becomes an EQUAL (equal-weight) goal and its subgoals get equal weights.
-- **You do not need the old data:** drop the `goalstack` database and start the app; Flyway builds everything.
-- If the first start stops with `Table '...users' doesn't exist`, your database is still at Version 1; run the upgrade script above. Nothing was changed by the failed migration.
-
-## Try the API from PowerShell
-```powershell
-$body = @{ name = "Asha"; email = "asha@example.com"; password = "password123" } | ConvertTo-Json
-$r = Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/auth/register -ContentType "application/json" -Body $body
-$headers = @{ Authorization = "Bearer $($r.token)" }
-Invoke-RestMethod http://localhost:8080/api/goals -Headers $headers      # works: []
-Invoke-WebRequest http://localhost:8080/api/goals                         # no token: 401
+``` powershell
+$env:AI_PROVIDER = "fake"
+mvn spring-boot:run
 ```
 
-## Security notes and limitations
-- Passwords are stored as BCrypt hashes and must be 8 to 72 characters. Login errors do not say whether the email exists.
-- The token is kept in `localStorage`. That is simple, but any script injected into the page could read it. React escapes text by default, which helps. Cookies with refresh tokens are a stronger design.
-- No refresh tokens: when the token expires the user logs in again.
-- No password reset, email verification, account deletion, rate limiting or lockout.
-- Registration says when an email is already taken, so emails can be checked for existence.
-- Without `JWT_SECRET`, logins reset on every restart. Always set it outside quick local testing.
-- The overdue rule uses the server's date. No pagination or sorting on the dashboard. No frontend automated tests.
+The project configuration may support additional Ollama settings. Check
+`application.properties` and the AI configuration classes in the current
+branch for the exact property names and defaults.
 
-## Future enhancements
-Refresh tokens and password reset, rate limiting, Flyway migrations, subgoal deadlines or ordering, frontend tests, cloud deployment.
+## AI planning API
 
+The AI planning controller exposes these endpoints:
 
-## Calendar and AI Planner demo (V3)
+  -------------------------------------------------------------------------
+  Method                  Endpoint                  Purpose
+  ----------------------- ------------------------- -----------------------
+  POST                    `/api/ai/chat`            Send conversation
+                                                    messages to the planner
+                                                    and receive an
+                                                    assistant response.
 
-The V3 calendar and AI planner are available after login:
-- `/calendar` shows scheduled subgoals in day, week and month views.
-- `/ai-planner` provides a small chat planner and a quick goal generator.
-- Review and edit generated suggestions before saving them.
+  POST                    `/api/ai/generate-plan`   Generate a structured
+                                                    goal and subgoal plan.
+  -------------------------------------------------------------------------
 
-Calendar dates are stored in the `subgoals.target_date` column. Flyway migration
-`V3__calendar_target_dates.sql` adds this nullable column without deleting existing records.
-The default `AI_PROVIDER=fake` mode is scripted demo behavior and does not require Ollama.
-See `docs/V3_CALENDAR_AND_CHAT_DEMO.md` for setup and verification steps.
+These endpoints are protected according to the application's Spring
+Security configuration. Include a valid JWT access token when calling
+them.
+
+Use the DTO definitions in `src/main/java/com/goalstack/dto/` as the
+source of truth for request and response fields.
+
+## Testing
+
+Run all backend tests:
+
+``` powershell
+mvn clean test
+```
+
+Run the AI planning tests, if present in the current branch:
+
+``` powershell
+mvn test -Dtest=AIPlanningControllerTest,AIPlanningServiceTest
+```
+
+Run the frontend production build:
+
+``` powershell
+cd frontend
+npm run build
+```
+
+If the repository contains an Ollama smoke-test script, run it from the
+project root:
+
+``` powershell
+.\scripts\ollama-smoke-test.ps1
+```
+
+The smoke test requires the Ollama service and configured model to be
+available.
+
+## Suggested manual verification
+
+-   Register a user and log in.
+-   Create a goal and add subgoals.
+-   Assign estimated hours and target dates.
+-   Verify that goal progress changes when subgoal statuses change.
+-   Open the calendar and check day, week, and month views.
+-   Complete and reopen a subgoal from the calendar.
+-   Verify that the AI provider status matches the selected provider.
+-   Send a planning message and inspect the assistant response.
+-   Generate a plan, review it, and save it.
+-   Confirm that saved goals and subgoals appear in the normal goal
+    views and calendar.
+-   Verify that one user cannot access another user's goals.
+
+## Git workflow
+
+A suggested workflow for feature development:
+
+``` powershell
+git status
+git switch -c feature/your-feature-name
+```
+
+After implementing and testing:
+
+``` powershell
+git add .
+git commit -m "Describe the change"
+```
+
+Merge a feature branch only after its tests and frontend build pass.
+
+## Security and configuration notes
+
+-   Never commit database passwords, JWT secrets, or other credentials.
+-   Use environment variables or a local, untracked configuration file
+    for secrets.
+-   Do not assume that a `.env` file is automatically loaded by Spring
+    Boot. Configure environment variables or explicitly configure a
+    dotenv integration.
+-   Keep authenticated endpoints protected and retain server-side
+    user-ownership checks.
+-   Treat AI-generated content as an editable suggestion. Validate it on
+    the backend before saving it.
+
+## Current development focus
+
+The current V3 development work focuses on: - Verifying the calendar and
+target-date workflow. - Switching the AI planner from scripted responses
+to real Ollama inference. - Improving conversational context and
+structured plan generation. - Testing the complete workflow from goal
+description through saving and calendar display.
+
+See the `docs/` directory for additional implementation notes and the
+changelog.
