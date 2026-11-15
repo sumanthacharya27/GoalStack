@@ -1,4 +1,4 @@
-# GoalStack (Version 3, phase 1: effort-weighted progress)
+# GoalStack (Version 3, phases 1 and 2: effort-weighted progress + AI foundation)
 
 A goal management web app with user accounts. Each user creates goals, splits them into subgoals, sets optional deadlines, and sees progress calculated automatically. Users only see their own goals.
 
@@ -28,7 +28,13 @@ Large goals are hard to finish when they are not broken into small steps. GoalSt
 - Weights are calculated on the server, always total exactly 100.00%, and are recalculated when a subgoal is added, deleted or its hours change
 - Goals made before Version 3 keep equal weights forever (no hours); the app tells you so on the goal page
 - Database changes are now managed by Flyway migration files instead of Hibernate `update`
-- Planned next (not built yet): AI planning chat with a local Ollama model
+  **New in Version 3, phase 2 (AI foundation, no chat screens yet)**
+- A provider-independent AI layer: the app talks to an `AIProvider` interface, never to a vendor library
+- Two providers: `fake` (built-in demo, the default) and `ollama` (a real model running on your own PC)
+- Structured output: JSON Schemas for assistant turns and plans, strict parsing and validation of everything the model returns, one automatic "please fix your answer" retry
+- Timeouts, error mapping (503, 504, 429, 502 with a `code` such as `AI_UNAVAILABLE`) and bounded retries
+- `GET /api/ai/status` (login required) shows whether the AI is usable
+- Planned next (not built yet): saved chat sessions, plan generation, draft review, React chat screens
 
 Not included: refresh tokens, password reset, email verification, roles, rate limiting, nested subgoals, notifications.
 
@@ -146,7 +152,46 @@ docker compose up --build
 Open http://localhost:8080. MySQL data is kept in a Docker volume.
 
 ## Tests
-`mvn test` runs 70 tests (no MySQL needed; the repository test uses in-memory H2 with Flyway switched off, because the migration files are written for MySQL).
+`mvn test` runs 135 tests (no MySQL needed; the repository test uses in-memory H2 with Flyway switched off, because the migration files are written for MySQL).
+
+## AI assistant setup (Version 3, phase 2)
+**Which provider?** The code supports `fake` and `ollama`. You chose a local model with Ollama. Why that fits:
+- It is free to use, runs on your own PC, needs no API key, and your goals never leave your machine.
+- Trade-offs: it needs enough RAM (or a GPU), the first answer is slow while the model loads, and small models follow the JSON format less reliably than big hosted models. GoalStack validates every answer and asks the model to fix a bad one once.
+- Hosted AI services (paid or free-tier) are not implemented. Because the app only knows the `AIProvider` interface, a hosted adapter can be added later without touching the planning code. Check each vendor's current pricing and limits before choosing one.
+
+**Try it without any model (default):** the app starts with `AI_PROVIDER=fake`. Log in and open `/api/ai/status` (see below): it answers "Demo mode".
+
+**Use a real local model:**
+1. Install Ollama for Windows from ollama.com and start it (it runs in the background).
+2. Download a model in a terminal, for example: `ollama pull llama3.1:8b`. As a rough guide an 8B model wants about 8 GB of free memory; if your PC has less, try a smaller model such as `llama3.2:3b` (it is weaker at following the format). Check with `ollama list`.
+3. Test the model on its own with `.\scripts\ollama-smoke-test.ps1 -Model "llama3.1:8b"` (not yet run by me; it prints the plan JSON and checks the hours).
+4. Start GoalStack with the real provider:
+```powershell
+$env:AI_PROVIDER = "ollama"
+$env:OLLAMA_MODEL = "llama3.1:8b"
+mvn spring-boot:run
+```
+5. Check the status (after logging in and getting a token as shown in "Try the API from PowerShell"):
+```powershell
+Invoke-RestMethod http://localhost:8080/api/ai/status -Headers $headers
+```
+`availability` is `AVAILABLE` (ready), `MODEL_MISSING` (run `ollama pull`), `UNREACHABLE` (Ollama is not running), or `DEMO` (fake provider).
+
+**AI settings** (environment variables):
+| Variable | Default | Meaning |
+|---|---|---|
+| `AI_PROVIDER` | `fake` | `fake` or `ollama` |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Where Ollama listens |
+| `OLLAMA_MODEL` | `llama3.1:8b` | Model name exactly as shown by `ollama list` |
+| `OLLAMA_NUM_CTX` | `8192` | Context size in tokens (sent on every call so long chats are not silently cut) |
+| `OLLAMA_API_KEY` | empty | Only for an Ollama behind a gateway; stays on the backend |
+| `AI_READ_TIMEOUT` | `120s` | How long to wait for an answer (first call is slowest) |
+| `AI_FAKE_FAILURE` | `NONE` | Makes the fake AI fail on purpose: `UNAVAILABLE`, `RATE_LIMITED`, `TIMEOUT`, `BAD_JSON` |
+
+**How model answers are treated:** all model output is untrusted. It must be JSON, must match the schema, and must pass the same limits as manual input (title up to 120 characters, hours 0.25 to 1000 with at most 2 decimals, at most 50 subgoals). Prompts and answers are not written to the log. The model never gets database access, and it never decides weights or deadlines: the backend calculates those.
+
+**AI errors** look like normal errors plus a `code`: `AI_UNAVAILABLE` (503), `AI_TIMEOUT` (504), `AI_RATE_LIMITED` (429), `AI_BAD_RESPONSE` (502), `AI_NOT_CONFIGURED` (503), `AI_REQUEST_REJECTED` (502). Manual goal management keeps working whatever the AI does.
 
 ## Upgrading an existing database
 Back up first: `mysqldump -u root -p goalstack > backup.sql`

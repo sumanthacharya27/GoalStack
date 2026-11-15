@@ -52,7 +52,7 @@ async function request(path, options = {}) {
     if (response.status === 401 && !isAuthEndpoint) {
         clearToken();
         if (unauthorizedHandler) unauthorizedHandler();
-        throw makeError("Your session has expired. Please log in again.", 401, {});
+        throw makeError("Your session has expired. Please log in again.", 401, {}, "SESSION_EXPIRED");
     }
 
     if (response.status === 204) {
@@ -70,16 +70,18 @@ async function request(path, options = {}) {
         throw makeError(
             data?.message || "Something went wrong. Please try again.",
             response.status,
-            data?.fieldErrors || {}
+            data?.fieldErrors || {},
+            data?.code
         );
     }
     return data;
 }
 
-function makeError(message, status, fieldErrors) {
+function makeError(message, status, fieldErrors, code) {
     const error = new Error(message);
     error.status = status;
     error.fieldErrors = fieldErrors;
+    error.code = code; // for example AI_UNAVAILABLE; undefined for ordinary errors
     return error;
 }
 
@@ -89,6 +91,7 @@ export const api = {
     register: (body) => request("/auth/register", json("POST", body)),
     login: (body) => request("/auth/login", json("POST", body)),
     me: () => request("/auth/me"),
+    aiStatus: () => request("/ai/status"),
 
     listGoals: () => request("/goals"),
     getGoal: (id) => request(`/goals/${id}`),

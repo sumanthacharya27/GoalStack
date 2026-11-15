@@ -1,5 +1,7 @@
 package com.goalstack.exception;
 
+import com.goalstack.ai.AIErrorType;
+import com.goalstack.ai.AIProviderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -57,6 +59,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidStatusException.class)
     public ResponseEntity<ApiError> handleInvalidStatus(InvalidStatusException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of());
+    }
+
+    /** Any AI problem: the log gets the detail, the user gets a safe message and a code the UI can react to. */
+    @ExceptionHandler(AIProviderException.class)
+    public ResponseEntity<ApiError> handleAiProblem(AIProviderException ex) {
+        log.warn("AI provider problem: type={} detail={}", ex.getType(), ex.getMessage());
+        AIErrorType type = ex.getType();
+        return ResponseEntity.status(type.getHttpStatus())
+                .body(new ApiError(type.getHttpStatus(), type.getUserMessage(), Map.of(), type.getCode()));
     }
 
     @ExceptionHandler(ValidationFailedException.class)
