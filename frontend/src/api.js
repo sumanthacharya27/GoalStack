@@ -92,6 +92,8 @@ export const api = {
     login: (body) => request("/auth/login", json("POST", body)),
     me: () => request("/auth/me"),
     aiStatus: () => request("/ai/status"),
+    chatWithPlanner: (messages) => request("/ai/chat", json("POST", { messages })),
+    generatePlan: (messages) => request("/ai/generate-plan", json("POST", { messages })),
 
     listGoals: () => request("/goals"),
     getGoal: (id) => request(`/goals/${id}`),

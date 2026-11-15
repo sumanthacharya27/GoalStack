@@ -221,3 +221,16 @@ Invoke-WebRequest http://localhost:8080/api/goals                         # no t
 
 ## Future enhancements
 Refresh tokens and password reset, rate limiting, Flyway migrations, subgoal deadlines or ordering, frontend tests, cloud deployment.
+
+
+## Calendar and AI Planner demo (V3)
+
+The V3 calendar and AI planner are available after login:
+- `/calendar` shows scheduled subgoals in day, week and month views.
+- `/ai-planner` provides a small chat planner and a quick goal generator.
+- Review and edit generated suggestions before saving them.
+
+Calendar dates are stored in the `subgoals.target_date` column. Flyway migration
+`V3__calendar_target_dates.sql` adds this nullable column without deleting existing records.
+The default `AI_PROVIDER=fake` mode is scripted demo behavior and does not require Ollama.
+See `docs/V3_CALENDAR_AND_CHAT_DEMO.md` for setup and verification steps.

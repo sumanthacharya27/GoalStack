@@ -20,6 +20,12 @@ export default function Navbar() {
                             <NavLink to="/" end className={({ isActive }) => `gs-nav-link${isActive ? " active" : ""}`}>
                                 My goals
                             </NavLink>
+                            <NavLink to="/calendar" className={({ isActive }) => `gs-nav-link${isActive ? " active" : ""}`}>
+                                Calendar
+                            </NavLink>
+                            <NavLink to="/ai-planner" className={({ isActive }) => `gs-nav-link${isActive ? " active" : ""}`}>
+                                AI planner
+                            </NavLink>
                         </div>
                         <div className="gs-nav-actions">
                             <span className="gs-user-name">{user.name}</span>

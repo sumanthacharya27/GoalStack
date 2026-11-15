@@ -19,6 +19,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /** One row in the "subgoals" table. Each subgoal belongs to exactly one Goal. */
 @Entity
@@ -44,6 +45,10 @@ public class Subgoal {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
     private SubgoalStatus status = SubgoalStatus.PENDING;
+
+    // Optional date used by the execution calendar.
+    @Column(name = "target_date")
+    private LocalDate targetDate;
 
     // Effort estimate in hours. Empty for goals made before Version 3.
     @Column(name = "estimated_hours", precision = 7, scale = 2)
@@ -88,6 +93,9 @@ public class Subgoal {
 
     public SubgoalStatus getStatus() { return status; }
     public void setStatus(SubgoalStatus status) { this.status = status; }
+
+    public LocalDate getTargetDate() { return targetDate; }
+    public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
 
     public BigDecimal getEstimatedHours() { return estimatedHours; }
     public void setEstimatedHours(BigDecimal estimatedHours) { this.estimatedHours = estimatedHours; }

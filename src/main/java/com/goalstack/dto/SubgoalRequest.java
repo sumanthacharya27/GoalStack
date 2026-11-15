@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /** JSON body for creating or updating a subgoal. Status is ignored on creation (always PENDING). */
 public class SubgoalRequest {
@@ -19,6 +20,9 @@ public class SubgoalRequest {
 
     @Size(max = 5000, message = "Description must be 5000 characters or fewer.")
     private String description;
+
+    // Optional schedule date shown on the calendar.
+    private LocalDate targetDate;
 
     // Required for goals made in Version 3 or later; not used for older goals. The service checks which applies.
     @DecimalMin(value = "0.25", message = "Estimated hours must be at least 0.25.")
@@ -34,6 +38,9 @@ public class SubgoalRequest {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public LocalDate getTargetDate() { return targetDate; }
+    public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
 
     public BigDecimal getEstimatedHours() { return estimatedHours; }
     public void setEstimatedHours(BigDecimal estimatedHours) { this.estimatedHours = estimatedHours; }

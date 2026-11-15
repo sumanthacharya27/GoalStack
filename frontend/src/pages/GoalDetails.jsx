@@ -4,7 +4,7 @@ import { api } from "../api.js";
 import Alerts from "../components/Alerts.jsx";
 import DeadlineLabel from "../components/DeadlineLabel.jsx";
 import ProgressBar from "../components/ProgressBar.jsx";
-import { STATUSES, formatHours, formatPercent, statusBadgeClass, statusLabel } from "../utils.js";
+import { STATUSES, formatDate, formatHours, formatPercent, statusBadgeClass, statusLabel } from "../utils.js";
 
 export default function GoalDetails() {
     const { id } = useParams();
@@ -152,6 +152,9 @@ export default function GoalDetails() {
                                     </p>
                                     {subgoal.description && (
                                         <p className="text-muted small mb-0 mt-1 gs-pre">{subgoal.description}</p>
+                                    )}
+                                    {subgoal.targetDate && (
+                                        <p className="text-muted small mb-0 mt-1">Target: {formatDate(subgoal.targetDate)}</p>
                                     )}
                                 </div>
 

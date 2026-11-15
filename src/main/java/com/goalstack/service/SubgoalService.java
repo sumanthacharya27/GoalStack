@@ -57,6 +57,7 @@ public class SubgoalService {
         subgoal.setTitle(request.getTitle().trim());
         subgoal.setDescription(blankToNull(request.getDescription()));
         subgoal.setStatus(SubgoalStatus.PENDING);
+        subgoal.setTargetDate(request.getTargetDate());
         subgoal.setEstimatedHours(hours);
 
         subgoals.add(subgoal); // the new subgoal goes last
@@ -74,6 +75,7 @@ public class SubgoalService {
         subgoal.setTitle(request.getTitle().trim());
         subgoal.setDescription(blankToNull(request.getDescription()));
         subgoal.setStatus(request.getStatus());
+        subgoal.setTargetDate(request.getTargetDate());
         subgoal.setEstimatedHours(hours);
 
         List<Subgoal> subgoals = subgoalRepository.findByGoalIdOrderBySortOrderAscIdAsc(goal.getId());

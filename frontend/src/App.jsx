@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import Calendar from "./pages/Calendar.jsx";
+import AIPlanner from "./pages/AIPlanner.jsx";
 import GoalDetails from "./pages/GoalDetails.jsx";
 import GoalForm from "./pages/GoalForm.jsx";
 import SubgoalForm from "./pages/SubgoalForm.jsx";
@@ -22,6 +24,8 @@ export default function App() {
                     {/* Pages that need a logged-in user */}
                     <Route element={<ProtectedRoute />}>
                         <Route path="/" element={<Dashboard />} />
+                        <Route path="/calendar" element={<Calendar />} />
+                        <Route path="/ai-planner" element={<AIPlanner />} />
                         <Route path="/goals/new" element={<GoalForm />} />
                         <Route path="/goals/:id" element={<GoalDetails />} />
                         <Route path="/goals/:id/edit" element={<GoalForm />} />

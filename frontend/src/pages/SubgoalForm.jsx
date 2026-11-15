@@ -14,7 +14,7 @@ export default function SubgoalForm() {
     const [goalId, setGoalId] = useState(goalIdParam || null);
     const [goalTitle, setGoalTitle] = useState("");
     const [weightingMode, setWeightingMode] = useState("EFFORT");
-    const [form, setForm] = useState({ title: "", description: "", status: "PENDING", estimatedHours: "" });
+    const [form, setForm] = useState({ title: "", description: "", status: "PENDING", estimatedHours: "", targetDate: "" });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
@@ -33,6 +33,7 @@ export default function SubgoalForm() {
                         description: subgoal.description || "",
                         status: subgoal.status,
                         estimatedHours: subgoal.estimatedHours ?? "",
+                        targetDate: subgoal.targetDate || "",
                     });
                 }
                 const goal = await api.getGoal(parentId);
@@ -65,12 +66,14 @@ export default function SubgoalForm() {
                     title: form.title,
                     description: form.description,
                     status: form.status,
+                    targetDate: form.targetDate || null,
                     ...(usesHours ? { estimatedHours: hours } : {}),
                 });
             } else {
                 await api.createSubgoal(goalId, {
                     title: form.title,
                     description: form.description,
+                    targetDate: form.targetDate || null,
                     ...(usesHours ? { estimatedHours: hours } : {}),
                 });
             }
@@ -118,6 +121,9 @@ export default function SubgoalForm() {
                         This goal was created before effort estimates existed, so every subgoal counts the same.
                     </p>
                 )}
+
+                <TextField id="targetDate" name="targetDate" type="date" label="Target date" optional
+                           value={form.targetDate} onChange={handleChange} error={fieldErrors.targetDate} />
 
                 {editing ? (
                     <div className="mb-3">
