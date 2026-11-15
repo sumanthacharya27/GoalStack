@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&amp;family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "inverse-primary": "#ffb59d",
+          "on-secondary-container": "#76340e",
+          "on-surface-variant": "#59413a",
+          "on-background": "#1c1917",
+          "primary": "#c2410c",
+          "primary-hover": "#ea580c",
+          "on-secondary-fixed-variant": "#76330d",
+          "on-secondary-fixed": "#351000",
+          "inverse-on-surface": "#f8efed",
+          "secondary-fixed": "#ffdbcc",
+          "surface": "#fdfbf7",
+          "on-secondary": "#ffffff",
+          "secondary-fixed-dim": "#ffb693",
+          "inverse-surface": "#342f2e",
+          "tertiary-fixed": "#ffdbca",
+          "secondary": "#2e7d32",
+          "on-surface": "#1c1917",
+          "surface-variant": "#f4efe9",
+          "tertiary": "#d97706",
+          "on-tertiary-fixed-variant": "#763300",
+          "on-primary-container": "#ffffff",
+          "tertiary-fixed-dim": "#ffb68e",
+          "surface-container-high": "#f0ebe1",
+          "on-tertiary": "#ffffff",
+          "on-tertiary-container": "#ffece4",
+          "on-error": "#ffffff",
+          "outline": "#a8a29e",
+          "primary-fixed-dim": "#ffb59d",
+          "on-primary-fixed-variant": "#832600",
+          "error": "#ba1a1a",
+          "primary-fixed": "#ffdbd0",
+          "surface-dim": "#ede7de",
+          "on-tertiary-fixed": "#331200",
+          "background": "#fdfbf7",
+          "surface-container-low": "#faf7f2",
+          "surface-container": "#f5f0e8",
+          "surface-bright": "#ffffff",
+          "primary-container": "#c2410c",
+          "error-container": "#ffdad6",
+          "surface-tint": "#c2410c",
+          "on-error-container": "#93000a",
+          "surface-container-lowest": "#ffffff",
+          "on-primary-fixed": "#390c00",
+          "on-primary": "#ffffff",
+          "surface-container-highest": "#e8e1d5",
+          "tertiary-container": "#b15106",
+          "outline-variant": "#e7e5e4",
+          "secondary-container": "#e8f5e9"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.375rem",
+          "lg": "0.625rem",
+          "xl": "1rem",
+          "2xl": "1.25rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "margin": "2rem",
+          "space-sm": "0.5rem",
+          "space-2xl": "4rem",
+          "gutter-lg": "2rem",
+          "margin-lg": "3.5rem",
+          "space-md": "1rem",
+          "gutter-sm": "1rem",
+          "margin-sm": "1rem",
+          "space-xl": "2.5rem",
+          "gutter": "1.5rem",
+          "space-xs": "0.25rem",
+          "space-lg": "1.5rem"
+        },
+        "fontFamily": {
+          "serif": ["Newsreader", "Georgia", "serif"],
+          "sans": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+          "headline-md": ["Newsreader", "Georgia", "serif"],
+          "display-lg-mobile": ["Newsreader", "Georgia", "serif"],
+          "body-lg": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+          "display-lg": ["Newsreader", "Georgia", "serif"],
+          "headline-xl": ["Newsreader", "Georgia", "serif"],
+          "headline-xl-mobile": ["Newsreader", "Georgia", "serif"],
+          "body-md": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+          "label-sm": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+          "headline-lg": ["Newsreader", "Georgia", "serif"],
+          "label-md": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+          "body-sm": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+          "headline-sm": ["Newsreader", "Georgia", "serif"],
+          "caption": ["Plus Jakarta Sans", "system-ui", "sans-serif"]
+        },
+        "fontSize": {
+          "headline-md": ["26px", {"lineHeight": "34px", "fontWeight": "500"}],
+          "display-lg-mobile": ["38px", {"lineHeight": "46px", "letterSpacing": "-0.015em", "fontWeight": "400"}],
+          "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+          "display-lg": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+          "headline-xl": ["44px", {"lineHeight": "52px", "letterSpacing": "-0.015em", "fontWeight": "500"}],
+          "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+          "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
+          "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "600"}],
+          "headline-lg": ["34px", {"lineHeight": "42px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+          "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+          "body-sm": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+          "headline-sm": ["22px", {"lineHeight": "30px", "fontWeight": "600"}],
+          "caption": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500"}]
+        }
+      }
+    }
+  }
+</script></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-orange-100 selection:text-primary"><header class="fixed top-0 w-full z-50 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-outline-variant/60 shadow-sm"><div class="h-16 max-w-7xl mx-auto px-gutter-md lg:px-gutter-lg flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-[20px]">layers</span></div><span class="font-serif text-[22px] font-semibold text-on-surface tracking-tight">GoalStack</span></div><nav class="hidden md:flex items-center gap-gutter-md" data-active-classes="text-primary font-semibold"><a aria-current="page" class="transition-colors text-primary font-semibold text-[14px]" data-path="landing-preview" href="#">Overview</a><a class="font-sans text-[14px] text-stone-600 hover:text-on-surface transition-colors" data-path="calendar" href="#">Interactive App</a><a class="font-sans text-[14px] text-stone-600 hover:text-on-surface transition-colors" data-path="roadmaps" href="#">Roadmaps</a></nav><div class="flex items-center gap-space-md"><a class="px-space-md py-space-xs rounded-lg bg-primary hover:bg-primary-hover text-white font-sans text-label-md font-medium shadow-sm transition-all duration-150" data-path="calendar" href="#">Launch App</a><div class="w-8 h-8 rounded-full bg-stone-100 border border-outline-variant flex items-center justify-center text-stone-700"><span class="material-symbols-outlined text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface"><div class="flex flex-col w-full">
+<!-- Warm Ambient Glow -->
+<div class="relative w-full overflow-hidden">
+<div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-orange-100/60 blur-[130px] rounded-full pointer-events-none"></div>
+<div class="absolute top-96 right-10 w-[420px] h-[420px] bg-amber-50/70 blur-[140px] rounded-full pointer-events-none"></div>
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-gutter-md lg:px-gutter-lg pt-space-xl pb-space-lg flex flex-col items-center text-center relative z-10">
+<!-- Top Badge -->
+<div class="inline-flex items-center gap-space-xs px-3.5 py-1.5 rounded-full bg-stone-100/90 border border-stone-200 shadow-xs mb-space-lg">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="font-sans text-[11px] font-semibold text-stone-700 tracking-wider uppercase">GoalStack 2.0 Engine Live</span>
+</div>
+<!-- Main Headline -->
+<h1 class="font-serif text-[42px] sm:text-[54px] lg:text-[62px] text-on-surface max-w-4xl tracking-tight leading-[1.12] mb-space-md font-normal">
+        Turn Ambition Into Action <span class="text-stone-300 font-light">—</span> <br class="hidden sm:inline"/>
+<span class="text-primary italic font-serif">Connect Long-Term Vision</span> to Daily Execution.
+      </h1>
+<!-- Subtitle -->
+<p class="font-sans text-[17px] sm:text-[19px] text-stone-600 max-w-2xl mx-auto leading-relaxed mb-space-xl">
+        Stop letting 1-year and 5-year goals die in notes apps. GoalStack automatically deconstructs macro ambitions into scheduled, calendar-ready tactical wins.
+      </p>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row items-center justify-center gap-space-md w-full sm:w-auto mb-space-xl">
+<button class="w-full sm:w-auto px-7 py-3 rounded-lg bg-primary text-white font-sans text-label-md font-semibold shadow-sm hover:bg-primary-hover hover:shadow transition-all duration-200 flex items-center justify-center gap-space-xs group" id="cta-primary-btn">
+<span>Get Started Free</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="w-full sm:w-auto px-6 py-3 rounded-lg bg-white border border-stone-300 text-stone-800 font-sans text-label-md font-medium hover:bg-stone-50 hover:border-stone-400 transition-colors flex items-center justify-center gap-space-sm shadow-xs group" id="open-video-modal">
+<span class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</span>
+<span>Watch Interactive Demo (45s)</span>
+</button>
+</div>
+<!-- Social Proof Badge -->
+<div class="flex flex-col items-center gap-space-sm pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<!-- Avatars Stack -->
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full ring-2 ring-white object-cover" data-alt="Portrait photo of a young male startup founder wearing glasses in modern tech office dark lighting with crisp rim light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbcndB3gNxhzl4y6p8n1U6FuCKHNtFIy6Qfku9P6pf7RdwS1ghmqc6-QVqGz1WjGW22qnA_c9EeOJ5PDOCGT6GGkzNfehAw0gCpSuNAQfNwyadb1oFMOuqvcut9wU-wOlNHZ14_ClKPF7T4Y_hGkIKzB2nDY42mcScvIHNIeHBkGacxCchZHDsFvDJaYkjXAzLztggHzO4cI8K_YeXMx4mwJSVqkNcq93NyXCCP8E"/>
+<img class="w-8 h-8 rounded-full ring-2 ring-white object-cover" data-alt="Portrait photograph of an executive woman tech strategist smiling with dark architectural studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJupmSc72Ucjfa7hbWItRfrymyklLXm0YaczYWIcAiLdqOq16TtmNRhfuUA7a1ICfWOLfru0sARV6_PUQCS0p9DHkZxO2H07T8gzf5A57AkHNrmG0B30AskLc2g7OHeZQikKPyR6xjZ5EWJXRgKi3YnsniLGN0jDsGAY4QdCadXjs4I1b_Jmx0OpLSLQa_DI3l65dl42PrsNPkOvcIAOIKfPWwbAkfrxeqpPV-THE"/>
+<img class="w-8 h-8 rounded-full ring-2 ring-white object-cover" data-alt="Clean corporate headshot portrait of a product engineer with headphone around neck dark cinematic tone" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8cZjz04mRzRxPLm_rSlma-mWTxfhHUns5G_c-JuwNW0isU2lu_CPHMhP821d7m9VWsOweVCf_of9vgGty4WKxWt1ibgHtI6DSx_3OzwPs9Pt2F9o_O6Ou7aOmh7Iz6v8zp9qn6tYgHM1AtXHLIxhmKsxXfx-EfjlYhPBw4rGAhr9BmKWuOisa_deMdF-BILpjIBYgRLPscet_7ubvMoDTKxWSWKoOyRcOCb_yoqk"/>
+<img class="w-8 h-8 rounded-full ring-2 ring-white object-cover" data-alt="Minimalist portrait of an endurance athlete and tech director looking determined in dusk lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3CqYgLC44ABhgyMyvWwv_gTPWDfKeaaAgy3dBnoyKniCsohdG5nFyZD_CX6p5gPK7f5s83BRta564JgneIEzjXi8lzdc2kSGtQwe3D4iP4KfV7j8OQnmItNbG7rBmeliktbUeJylNHTJRRV1NzPBo3PRx7BfXkeU-2PjFDduANjRed38qGIpibdmgHuGfh9BdoBbGUYGoE6XkhZBe-haEPewGOH1LTrEkg2yJYso"/>
+</div>
+<div class="flex items-center gap-1 text-amber-500">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-sans text-label-md text-stone-900 font-semibold">4.9/5</span>
+</div>
+<p class="font-sans text-body-sm text-stone-500">
+          Trusted by <span class="text-stone-800 font-semibold">45,000+</span> ambitious founders, creators &amp; engineers worldwide
+        </p>
+<!-- Company Logos Matrix -->
+<div class="flex flex-wrap justify-center items-center gap-gutter-md pt-space-md opacity-60 hover:opacity-90 transition-opacity">
+<div class="flex items-center gap-1.5 font-sans font-semibold text-[13px] tracking-widest text-stone-600">
+<span class="material-symbols-outlined text-[18px]">terminal</span> NEXUS.IO
+          </div>
+<div class="flex items-center gap-1.5 font-sans font-semibold text-[13px] tracking-widest text-stone-600">
+<span class="material-symbols-outlined text-[18px]">bolt</span> KINETIC LABS
+          </div>
+<div class="flex items-center gap-1.5 font-sans font-semibold text-[13px] tracking-widest text-stone-600">
+<span class="material-symbols-outlined text-[18px]">token</span> ATLAS VENTURES
+          </div>
+<div class="flex items-center gap-1.5 font-sans font-semibold text-[13px] tracking-widest text-stone-600">
+<span class="material-symbols-outlined text-[18px]">cyclone</span> CYCLERESEARCH
+          </div>
+</div>
+</div>
+</section>
+<!-- Interactive Decomposition Matrix Showcase -->
+<section class="max-w-7xl mx-auto px-gutter-md lg:px-gutter-lg py-space-xl relative z-10">
+<div class="text-center max-w-2xl mx-auto mb-space-lg">
+<span class="font-sans text-[12px] font-semibold text-primary uppercase tracking-widest">Live System Simulation</span>
+<h2 class="font-serif text-[32px] sm:text-[38px] text-on-surface mt-space-xs">The Decomposition Matrix</h2>
+<p class="font-sans text-body-md text-stone-600 mt-space-xs">
+          Watch GoalStack dismantle a 6-month product release into pinpoint micro-tasks and synchronize them onto your morning calendar.
+        </p>
+</div>
+<!-- Matrix Container -->
+<div class="w-full bg-white rounded-2xl p-space-md lg:p-space-lg shadow-sm border border-stone-200/80 relative overflow-hidden">
+<!-- Live Process Status Ribbon -->
+<div class="flex flex-wrap items-center justify-between pb-space-md mb-space-md gap-space-sm bg-stone-50/80 border border-stone-200/60 p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+<span class="font-sans text-label-sm text-emerald-800 uppercase font-semibold">Active Decomposition Stream</span>
+<span class="text-stone-300">|</span>
+<span class="font-mono text-body-sm text-stone-500">MODEL: RECURSIVE-EXEC-V4</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-sm py-space-xs bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 rounded font-sans text-label-sm transition-colors flex items-center gap-1 shadow-2xs" id="trigger-recalc">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+<span>Re-calculate Stack</span>
+</button>
+<span class="font-sans text-label-sm text-stone-400">Target: Oct 31 Release</span>
+</div>
+</div>
+<!-- 2-Column Split: Macro Goal to Calendar Allocation -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-md items-start">
+<!-- Column 1: Macro & Sub-goal Architecture (5 cols) -->
+<div class="lg:col-span-5 flex flex-col gap-space-md">
+<!-- Root Objective Card -->
+<div class="bg-stone-50/60 border border-stone-200/70 p-space-md rounded-xl shadow-2xs relative group">
+<div class="flex items-start justify-between">
+<div>
+<span class="px-2.5 py-0.5 rounded-full bg-orange-100 text-primary font-sans text-label-sm uppercase tracking-wide font-semibold">Macro Horizon • 180 Days</span>
+<h3 class="font-serif text-[22px] font-medium text-stone-900 mt-2">Launch AI Analytics SaaS to 10k ARR</h3>
+</div>
+<div class="w-9 h-9 rounded-lg bg-orange-50 border border-orange-200/60 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between text-stone-600">
+<span class="font-sans text-body-sm">Deconstruction Depth: <strong class="text-stone-900">3 Layers</strong></span>
+<span class="font-sans text-label-sm text-emerald-700 flex items-center gap-1 font-mono font-medium">
+<span class="material-symbols-outlined text-[14px]">done_all</span> 64% Stacked
+                </span>
+</div>
+<div class="w-full bg-stone-200 h-1.5 rounded-full mt-space-xs overflow-hidden">
+<div class="bg-emerald-600 h-full rounded-full transition-all duration-500" style="width: 64%;"></div>
+</div>
+</div>
+<!-- Downstream Step Cards -->
+<div class="flex flex-col gap-space-sm pl-space-md border-l-2 border-stone-200">
+<!-- Sub-goal 1 -->
+<div class="bg-white border border-stone-200/80 p-space-sm rounded-lg flex items-center justify-between shadow-2xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-stone-100 border border-stone-200 text-stone-700 flex items-center justify-center font-sans text-label-sm font-semibold font-mono">M1</span>
+<div>
+<h4 class="font-sans text-label-md font-medium text-stone-900">Complete Payment Webhook Pipeline</h4>
+<p class="font-sans text-body-sm text-stone-500">Stripe webhooks &amp; seat limits</p>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-stone-100 text-stone-600 font-sans text-label-sm border border-stone-200">In Progress</span>
+</div>
+<!-- Sub-goal 2 Active Tactical -->
+<div class="bg-orange-50/50 border border-orange-200 p-space-sm rounded-lg flex items-center justify-between shadow-xs ring-1 ring-orange-200/50">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-primary text-white flex items-center justify-center font-sans text-label-sm font-semibold font-mono">M2</span>
+<div>
+<h4 class="font-sans text-label-md font-semibold text-stone-900 flex items-center gap-2">
+<span>Zero-Latency Schema Migration</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</h4>
+<p class="font-sans text-body-sm text-primary font-mono font-medium">Splitting: 3 Focus Sprints</p>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-primary text-white font-sans text-label-sm font-medium">Active Focus</span>
+</div>
+<!-- Sub-goal 3 -->
+<div class="bg-stone-50/50 border border-stone-200/50 p-space-sm rounded-lg flex items-center justify-between opacity-75">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded bg-stone-100 text-stone-500 flex items-center justify-center font-sans text-label-sm font-mono">M3</span>
+<div>
+<h4 class="font-sans text-label-md text-stone-700">Enterprise SOC2 Type 1 Audit Prep</h4>
+<p class="font-sans text-body-sm text-stone-400">Scheduled for Sprint Week 32</p>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-stone-100 text-stone-400 font-sans text-label-sm">Queued</span>
+</div>
+</div>
+</div>
+<!-- Central Transition Connector (Visual Indicator) -->
+<!-- Column 2: Tactical Injection into Calendar (7 cols) -->
+<div class="lg:col-span-7 bg-stone-50/60 border border-stone-200/70 p-space-md rounded-xl shadow-2xs">
+<div class="flex items-center justify-between pb-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_today</span>
+<span class="font-serif text-[20px] font-semibold text-stone-900">Automated Schedule Stream</span>
+</div>
+<span class="font-sans text-[11px] px-2 py-0.5 bg-emerald-100/70 text-emerald-800 rounded-full font-mono font-semibold">SYNCED: GOOGLE CALENDAR</span>
+</div>
+<p class="font-sans text-body-sm text-stone-600 mb-space-md">
+              GoalStack locates high-energy biological focus slots and reserves real calendar inventory without manual drag-and-drop.
+            </p>
+<!-- Calendar Schedule Blocks -->
+<div class="space-y-space-sm">
+<!-- Time Block 1 (Executed) -->
+<div class="p-space-sm rounded-lg bg-white border border-stone-200/70 flex items-center justify-between opacity-70">
+<div class="flex items-center gap-space-sm">
+<span class="font-mono text-body-sm text-stone-400 w-16">07:30 AM</span>
+<div class="w-1.5 h-8 bg-emerald-600 rounded-full"></div>
+<div>
+<p class="font-sans text-label-md text-stone-600 line-through">Draft Database Indexing Matrix</p>
+<span class="font-sans text-body-sm text-emerald-700 flex items-center gap-1 font-mono">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> 45m Sprint Finished
+                    </span>
+</div>
+</div>
+<span class="font-mono text-label-sm text-stone-400">+12 Momentum</span>
+</div>
+<!-- Time Block 2 (Current Active Execution) -->
+<div class="p-space-sm rounded-lg bg-white border-2 border-primary/25 flex items-center justify-between shadow-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-mono text-body-sm text-primary font-semibold w-16">09:15 AM</span>
+<div class="w-1.5 h-10 bg-primary rounded-full animate-pulse"></div>
+<div>
+<div class="flex items-center gap-space-xs">
+<p class="font-sans text-label-md text-stone-900 font-semibold">Write Postgres Upsert Logic &amp; Constraints</p>
+<span class="px-1.5 py-0.2 rounded bg-orange-100 text-primary font-sans text-label-sm font-semibold">High Flow</span>
+</div>
+<span class="font-sans text-body-sm text-stone-500">Allocated via M2 Sub-goal • 90m slot</span>
+</div>
+</div>
+<button class="px-space-sm py-1 bg-primary hover:bg-primary-hover text-white rounded font-sans text-label-sm font-semibold shadow-2xs transition-colors">
+                  Complete
+                </button>
+</div>
+<!-- Time Block 3 (Afternoon Sprint) -->
+<div class="p-space-sm rounded-lg bg-white border border-stone-200/70 flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="font-mono text-body-sm text-stone-400 w-16">02:00 PM</span>
+<div class="w-1.5 h-8 bg-amber-500 rounded-full"></div>
+<div>
+<p class="font-sans text-label-md text-stone-800">Stress Test Sharded Query Limits</p>
+<span class="font-sans text-body-sm text-stone-400">Auto-allocated during low meeting density</span>
+</div>
+</div>
+<span class="font-mono text-label-sm text-stone-400">Pending</span>
+</div>
+<!-- Time Block 4 (Evening Review) -->
+<div class="p-space-sm rounded-lg bg-white border border-stone-200/70 flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="font-mono text-body-sm text-stone-400 w-16">05:15 PM</span>
+<div class="w-1.5 h-8 bg-stone-300 rounded-full"></div>
+<div>
+<p class="font-sans text-label-md text-stone-800">Momentum Stack Reflection &amp; Delta Review</p>
+<span class="font-sans text-body-sm text-stone-400">Automated 15m review session</span>
+</div>
+</div>
+<span class="font-mono text-label-sm text-stone-400">Scheduled</span>
+</div>
+</div>
+<!-- Compound Score Mini Meter -->
+<div class="mt-space-md p-space-sm bg-white border border-stone-200/80 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-emerald-600 text-[20px]">bolt</span>
+<div>
+<span class="font-sans text-label-md text-stone-800 font-medium">Projected Weekly Velocity</span>
+<p class="font-sans text-body-sm text-stone-500">On track for 114% of weekly sub-milestones</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-mono text-[20px] font-bold text-emerald-700">+38.4%</span>
+<p class="font-sans text-label-sm text-stone-400">Execution Momentum</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Grid (3 Columns) -->
+<section class="max-w-7xl mx-auto px-gutter-md lg:px-gutter-lg py-space-xl relative z-10">
+<div class="text-center max-w-2xl mx-auto mb-space-xl">
+<span class="font-sans text-[12px] font-semibold text-primary uppercase tracking-widest">Engine Architecture</span>
+<h2 class="font-serif text-[32px] sm:text-[38px] text-on-surface mt-space-xs">Engineered for Unrelenting Execution</h2>
+<p class="font-sans text-body-md text-stone-600 mt-space-xs">
+          Built from foundational human-performance psychology and recursive decomposition heuristics.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter-md">
+<!-- Feature 1: Algorithmic Splitting -->
+<div class="bg-white border border-stone-200/90 rounded-2xl p-space-lg flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow group">
+<div>
+<div class="w-12 h-12 rounded-xl bg-orange-50 border border-orange-200/60 text-primary flex items-center justify-center mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]">account_tree</span>
+</div>
+<h3 class="font-serif text-[24px] font-medium text-stone-900 mb-space-xs">Algorithmic Splitting</h3>
+<p class="font-sans text-body-md text-stone-600 leading-relaxed mb-space-md">
+              AI recursively tears down multi-year initiatives into quarterly checkpoints, weekly sprints, and 45-minute single-session tactical outputs.
+            </p>
+</div>
+<!-- Feature 1 Visual: Hierarchical Node Graph -->
+<div class="bg-stone-50/70 border border-stone-200/60 p-space-sm rounded-xl flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="font-sans text-label-sm font-semibold text-stone-800">5-Year Vision: Series A SaaS</span>
+</div>
+<div class="pl-4 flex flex-col gap-1 border-l-2 border-orange-200">
+<div class="flex items-center gap-2 text-stone-600">
+<span class="w-2 h-2 rounded bg-amber-500"></span>
+<span class="font-sans text-body-sm">Q3 Objective: 50 Beta Pilots</span>
+</div>
+<div class="pl-4 flex items-center gap-2 text-primary font-mono text-[12px] font-semibold">
+<span>↳</span> Today: Finalize Cold Pipeline
+              </div>
+</div>
+</div>
+</div>
+<!-- Feature 2: Google Calendar Auto-Injection -->
+<div class="bg-white border border-stone-200/90 rounded-2xl p-space-lg flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow group">
+<div>
+<div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200/60 text-emerald-700 flex items-center justify-center mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]">sync_saved_locally</span>
+</div>
+<h3 class="font-serif text-[24px] font-medium text-stone-900 mb-space-xs">Calendar Auto-Injection</h3>
+<p class="font-sans text-body-md text-stone-600 leading-relaxed mb-space-md">
+              Direct two-way synchronization with Google Calendar &amp; Outlook. Intelligently claims high-focus chronotype windows to secure deep work time.
+            </p>
+</div>
+<!-- Feature 2 Visual: Sparkline Sync Graph -->
+<div class="bg-stone-50/70 border border-stone-200/60 p-space-sm rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-stone-600 font-sans text-label-sm mb-2">
+<span>Peak Energy Match: 94.2%</span>
+<span class="text-primary font-mono font-semibold">08:00 - 11:30</span>
+</div>
+<svg class="w-full h-12 text-primary" fill="none" viewbox="0 0 200 40">
+<path d="M0 35 Q 25 35, 50 20 T 100 8 T 150 28 T 200 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M0 35 Q 25 35, 50 20 T 100 8 T 150 28 T 200 12 L 200 40 L 0 40 Z" fill="currentColor" fill-opacity="0.08"></path>
+</svg>
+</div>
+</div>
+<!-- Feature 3: Momentum Compound Gauge -->
+<div class="bg-white border border-stone-200/90 rounded-2xl p-space-lg flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow group">
+<div>
+<div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-700 flex items-center justify-center mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]">speed</span>
+</div>
+<h3 class="font-serif text-[24px] font-medium text-stone-900 mb-space-xs">Momentum Compound Gauge</h3>
+<p class="font-sans text-body-md text-stone-600 leading-relaxed mb-space-md">
+              Quantify tactical consistency with compound momentum scoring. Transform small frictionless habits into monumental quarterly accomplishments.
+            </p>
+</div>
+<!-- Feature 3 Visual: Circular Progress Metric -->
+<div class="bg-stone-50/70 border border-stone-200/60 p-space-sm rounded-xl flex items-center justify-around">
+<div class="relative w-16 h-16 flex items-center justify-center">
+<svg class="w-16 h-16 -rotate-90" viewbox="0 0 36 36">
+<path class="text-stone-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="88, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-serif text-[18px] font-bold text-stone-900">88%</span>
+</div>
+<div>
+<p class="font-sans text-label-md font-semibold text-stone-800">Streak Velocity</p>
+<p class="font-sans text-body-sm text-primary font-mono font-medium">+14 Consecutive Days</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials & Case Studies -->
+<section class="max-w-7xl mx-auto px-gutter-md lg:px-gutter-lg py-space-xl relative z-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-xl">
+<div>
+<span class="font-sans text-[12px] font-semibold text-primary uppercase tracking-widest">Battle-Tested Results</span>
+<h2 class="font-serif text-[32px] sm:text-[38px] text-on-surface mt-space-xs">Trusted By Relentless Operators</h2>
+</div>
+<p class="font-sans text-body-md text-stone-600 max-w-md mt-space-xs md:mt-0">
+          How top-tier venture founders and competitive endurance athletes execute at peak velocity without burnout.
+        </p>
+</div>
+<!-- Testimonial Cards Mosaic Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter-md">
+<!-- Testimonial 1 -->
+<div class="bg-white border border-stone-200/90 rounded-2xl p-space-lg flex flex-col justify-between shadow-xs hover:shadow transition-shadow">
+<div>
+<div class="flex items-center gap-1 text-amber-500 mb-space-md">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-serif text-[18px] sm:text-[19px] text-stone-800 mb-space-lg leading-relaxed italic">
+              “GoalStack completely erased the paralysis between our $2M ARR target and our morning to-do list. Every morning my calendar tells me precisely what move actually compounds.”
+            </p>
+</div>
+<div class="flex items-center gap-space-sm pt-space-sm border-t border-stone-100">
+<img class="w-10 h-10 rounded-full object-cover border border-stone-200" data-alt="Professional portrait photo of Marcus Vance, SaaS founder, minimalist dark background, high contrast executive styling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXxZAZqFYalVY0T8REjws8PuI2byTljDPulMxN1Z1A9_BMaxrkuluPOpIUYEAWjZ8P79Z61uZqTFnjCFs4YygkT5N6Z0mzMv_PI1v3v9uCo3iShc__H7fDqdLitvQaOHNN76lr3Jc9UWQ0mm9EawjJl2fowPngrYSfTMaoy9aB7ICMGJsrPIInS_Qdeqg2AU3gVS5NeJX-8jpet0Vy9CVwPUoR5BE01NCqGqBWoJY"/>
+<div>
+<h4 class="font-sans text-label-md font-semibold text-stone-900">Marcus Vance</h4>
+<p class="font-sans text-body-sm text-stone-500">Founder, ApexAI (YC W23)</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 (Featured Athlete / Founder) -->
+<div class="bg-orange-50/40 border-2 border-orange-200 rounded-2xl p-space-lg flex flex-col justify-between shadow-xs">
+<div>
+<div class="flex items-center gap-1 text-amber-500 mb-space-md">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-serif text-[18px] sm:text-[19px] text-stone-800 mb-space-lg leading-relaxed italic">
+              “Balancing Ironman training alongside closing a Series-A was tearing my schedule apart. The Algorithmic Splitting feature protected my morning 2-hour deep focus blocks automatically.”
+            </p>
+</div>
+<div class="flex items-center gap-space-sm pt-space-sm border-t border-orange-200/60">
+<img class="w-10 h-10 rounded-full object-cover border border-orange-300" data-alt="Portrait of Elena Rostova, female tech executive and Ironman athlete, sharp rim light dark athletic setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAa9XfjDYX0djFzV9iJ3MOkp7p3UdATSZByJa1LlJjatu_JjYqd9FQkSmpXK5OHYOnKGwxApUOK429tlMlbgJydW8ei4dqyGUW7XQx4xzIzsh_e4Ij1VA0BappRA-7xTm5SIVgGDp-gp38qnlSbJYXtAZuGYtur3hXLwU3GCjq9oWk_WH_3Buhac-SFK8uz7q-7LsQcx8cblDZSoO66JAOgqnGWcpkwweGKgblNNqs"/>
+<div>
+<h4 class="font-sans text-label-md font-semibold text-stone-900">Dr. Elena Rostova</h4>
+<p class="font-sans text-body-sm text-primary font-medium">CTO &amp; Ultramarathoner</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="bg-white border border-stone-200/90 rounded-2xl p-space-lg flex flex-col justify-between shadow-xs hover:shadow transition-shadow">
+<div>
+<div class="flex items-center gap-1 text-amber-500 mb-space-md">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-serif text-[18px] sm:text-[19px] text-stone-800 mb-space-lg leading-relaxed italic">
+              “Other tools are static graveyard lists. GoalStack is dynamic: if a sprint overflows, the engine dynamically recalibrates the quarter so momentum never crashes.”
+            </p>
+</div>
+<div class="flex items-center gap-space-sm pt-space-sm border-t border-stone-100">
+<img class="w-10 h-10 rounded-full object-cover border border-stone-200" data-alt="Headshot of Julian Thorne, principal engineer and systems architect, dark studio portrait executive lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGLblg6P7jiVRQ1hYfIfzIASy6E8lDVSHyySgra9MvyGY2qxPYEwaC-RzvPLeyVaWjGqBYNm8UoFn20c-IlAX6d2o0t4W_G4LiS4Vx2OzDdMFBC4qfImQ21PgSky9Oqe2HNYMvCIab5uxarcZj7PdFYb5W7LI6C02bPw1A_QCLSOaHdc17Cd1MxCwWxTNE7Cb_rX24fU9o8ZFBMx7U4zrRmB2FqcdqUs2rlR6Gvdo"/>
+<div>
+<h4 class="font-sans text-label-md font-semibold text-stone-900">Julian Thorne</h4>
+<p class="font-sans text-body-sm text-stone-500">Staff Architect, Hyperflow</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer Conversion CTA Banner -->
+<section class="max-w-7xl mx-auto px-gutter-md lg:px-gutter-lg pb-space-xl relative z-10">
+<div class="w-full bg-[#FAF7F2] border border-stone-200/90 rounded-2xl p-space-xl lg:p-space-xl flex flex-col md:flex-row items-center justify-between gap-space-xl shadow-xs relative overflow-hidden">
+<div class="max-w-xl text-left">
+<span class="font-sans text-[12px] font-semibold text-primary uppercase tracking-widest">Execute Without Friction</span>
+<h2 class="font-serif text-[30px] sm:text-[36px] text-stone-900 mt-space-xs">Ready to Conquer Your Long-Term Vision?</h2>
+<p class="font-sans text-body-md text-stone-600 mt-space-sm leading-relaxed">
+            Join 45,000+ ambitious individuals turning distant ambitions into daily tactical masterclasses. Free 14-day full engine trial.
+          </p>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-space-sm w-full md:w-auto">
+<input class="px-space-md py-3 rounded-lg bg-white border border-stone-300 text-stone-800 placeholder:text-stone-400 w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md shadow-2xs" placeholder="Enter your work email" type="email"/>
+<button class="w-full sm:w-auto px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-sans text-label-md font-semibold whitespace-nowrap shadow-sm hover:shadow transition-all">
+            Claim Your Stack
+          </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Video Modal (Hidden by Default) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300" id="video-modal">
+<div class="bg-white rounded-2xl p-space-md max-w-2xl w-full mx-space-md shadow-2xl relative border border-stone-200">
+<div class="flex items-center justify-between pb-space-sm border-b border-stone-200 mb-space-sm">
+<h4 class="font-serif text-[20px] font-medium text-stone-900">GoalStack 2.0 In Action (45s)</h4>
+<button class="text-stone-400 hover:text-stone-800 transition-colors" id="close-video-modal">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="aspect-video w-full bg-stone-100 rounded-xl flex flex-col items-center justify-center relative overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Cinematic frame capture of software interface screen recording showing automated goal breakdown in dark mode slate interface with glowing purple and green metrics" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwOJiEbOS4VwMNJ4-WW9S5hWVPkcvyqJZ_7-DbaJh18jKMkXc7VhRjZCOoTAkJPqXNR2cGc4XYCXA3Cf5ttqPYB6E6kjIMPR3LIhe9L2H7Iz24cELKd4SA50sDNuGouHDw67qd2T9pHK5la__i_gC8ubz85yjCZSFqrL-PFDVEtBdR-8B4XT67pn7Kpi6vyZlUDpQvaPfRcDqiaPIxUr51e5RDiEnHP9uQHwBTOhA"/>
+<div class="absolute inset-0 bg-stone-900/30 flex flex-col items-center justify-center">
+<button class="w-16 h-16 rounded-full bg-primary hover:bg-primary-hover text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[32px]">play_arrow</span>
+</button>
+<span class="font-sans text-label-md text-white mt-space-sm font-medium drop-shadow-sm">Click to Play Decomposition Demo</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro-Interactions Script -->
+<script>
+    (function() {
+      // Modal Logic
+      const modal = document.getElementById('video-modal');
+      const openBtn = document.getElementById('open-video-modal');
+      const closeBtn = document.getElementById('close-video-modal');
+
+      if (openBtn && modal) {
+        openBtn.addEventListener('click', () => {
+          modal.classList.remove('opacity-0', 'pointer-events-none');
+          modal.classList.add('opacity-100', 'pointer-events-auto');
+        });
+      }
+
+      if (closeBtn && modal) {
+        closeBtn.addEventListener('click', () => {
+          modal.classList.add('opacity-0', 'pointer-events-none');
+          modal.classList.remove('opacity-100', 'pointer-events-auto');
+        });
+      }
+
+      // Recalculate Simulation Button
+      const recalcBtn = document.getElementById('trigger-recalc');
+      if (recalcBtn) {
+        recalcBtn.addEventListener('click', function() {
+          const originalText = this.innerHTML;
+          this.innerHTML = '<span class="material-symbols-outlined text-[14px] animate-spin">sync</span> Recalculating...';
+          this.disabled = true;
+          setTimeout(() => {
+            this.innerHTML = '<span class="material-symbols-outlined text-[14px] text-emerald-700">check</span> Stack Optimized!';
+            setTimeout(() => {
+              this.innerHTML = originalText;
+              this.disabled = false;
+            }, 1800);
+          }, 900);
+        });
+      }
+    })();
+  </script>
+</div></main><footer class="w-full bg-[#FAF7F2] border-t border-stone-200/80 py-space-xl"><div class="max-w-7xl mx-auto px-gutter-md lg:px-gutter-lg flex flex-col md:flex-row items-center justify-between gap-gutter-md text-stone-600"><div class="flex items-center gap-space-sm"><span class="font-serif text-[20px] font-semibold text-stone-900">GoalStack</span><span class="font-sans text-body-sm text-stone-500">— Strategic Execution System</span></div><p class="font-sans text-body-sm text-stone-500">© 2025 GoalStack Inc. All executive rights reserved.</p></div></footer></body></html>

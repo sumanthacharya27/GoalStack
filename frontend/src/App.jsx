@@ -13,7 +13,7 @@ export default function App() {
     return (
         <>
             <Navbar />
-            <main className="container py-4">
+            <main className="gs-main">
                 <Routes>
                     {/* Public pages */}
                     <Route path="/login" element={<Login />} />

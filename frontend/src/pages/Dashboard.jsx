@@ -31,12 +31,16 @@ export default function Dashboard() {
         <>
             <Alerts message={location.state?.message} error={error} />
 
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div className="gs-page-heading">
                 <div>
-                    <h1 className="h3 mb-1">My Goals</h1>
+                    <span className="gs-eyebrow">Your personal workspace</span>
+                    <h1 className="gs-heading mb-1">My goals</h1>
                     <p className="text-muted mb-0">Break big goals into small steps and track your progress.</p>
                 </div>
-                <Link to="/goals/new" className="btn btn-gs">+ Add Goal</Link>
+                <Link to="/goals/new" className="btn btn-gs gs-add-goal">
+                    <span className="material-symbols-outlined" aria-hidden="true">add</span>
+                    Add goal
+                </Link>
             </div>
 
             {goals === null && !error && <p className="text-muted">Loading...</p>}
@@ -50,7 +54,7 @@ export default function Dashboard() {
             )}
 
             {goals !== null && goals.length > 0 && (
-                <div className="row g-2 mb-3">
+                <div className="gs-goal-toolbar">
                     <div className="col-12 col-md-8">
                         <input
                             type="search"
@@ -84,10 +88,10 @@ export default function Dashboard() {
             )}
 
             {goals !== null && visibleGoals.length > 0 && (
-                <div className="row g-3">
+                <div className="row g-3 gs-goal-grid">
                     {visibleGoals.map((goal) => (
                         <div className="col-12 col-md-6 col-lg-4" key={goal.id}>
-                            <div className="card gs-card h-100">
+                            <div className={`card gs-card gs-goal-card h-100${goal.complete ? " is-complete" : ""}`}>
                                 <div className="card-body d-flex flex-column">
                                     <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
                                         <h2 className="h5 mb-0">
@@ -96,15 +100,15 @@ export default function Dashboard() {
                                             </Link>
                                         </h2>
                                         <div className="d-flex gap-1">
-                                            {goal.complete && <span className="badge text-bg-success">Completed</span>}
-                                            {goal.overdue && <span className="badge text-bg-danger">Overdue</span>}
+                                            {goal.complete && <span className="badge gs-badge gs-badge-success">Completed</span>}
+                                            {goal.overdue && <span className="badge gs-badge gs-badge-danger">Overdue</span>}
                                         </div>
                                     </div>
 
                                     {goal.description && <p className="text-muted small gs-clamp">{goal.description}</p>}
 
                                     <div className="mt-auto">
-                                        <div className="d-flex justify-content-between small mb-1">
+                                        <div className="d-flex justify-content-between small mb-2 gs-progress-label">
                                             <span>{goal.completedCount} of {goal.totalCount} subgoals done</span>
                                             <strong>{formatPercent(goal.progress)}</strong>
                                         </div>
