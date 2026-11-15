@@ -4,7 +4,7 @@ import { api } from "../api.js";
 import Alerts from "../components/Alerts.jsx";
 import DeadlineLabel from "../components/DeadlineLabel.jsx";
 import ProgressBar from "../components/ProgressBar.jsx";
-import { STATUSES, statusBadgeClass, statusLabel } from "../utils.js";
+import { STATUSES, formatHours, formatPercent, statusBadgeClass, statusLabel } from "../utils.js";
 
 export default function GoalDetails() {
     const { id } = useParams();
@@ -101,9 +101,20 @@ export default function GoalDetails() {
 
                     <div className="d-flex justify-content-between small mb-1">
                         <span>{goal.completedCount} of {goal.totalCount} subgoals completed</span>
-                        <strong>{goal.progress}%</strong>
+                        <strong>{formatPercent(goal.progress)}</strong>
                     </div>
                     <ProgressBar progress={goal.progress} complete={goal.complete} />
+
+                    {goal.weightingMode === "EFFORT" ? (
+                        <p className="small text-muted mt-3 mb-0">
+                            Estimated effort: {formatHours(goal.totalEstimatedHours ?? 0)} in total. Each subgoal counts in
+                            proportion to its hours.
+                        </p>
+                    ) : (
+                        <p className="small text-muted mt-3 mb-0">
+                            This goal was created before effort estimates existed, so every subgoal counts the same.
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -134,6 +145,11 @@ export default function GoalDetails() {
                       {statusLabel(subgoal.status)}
                     </span>
                                     </div>
+                                    <p className="small text-muted mb-0 mt-1">
+                                        {formatPercent(subgoal.weight)} of this goal
+                                        {subgoal.estimatedHours !== null && subgoal.estimatedHours !== undefined &&
+                                            ` · ${formatHours(subgoal.estimatedHours)}`}
+                                    </p>
                                     {subgoal.description && (
                                         <p className="text-muted small mb-0 mt-1 gs-pre">{subgoal.description}</p>
                                     )}

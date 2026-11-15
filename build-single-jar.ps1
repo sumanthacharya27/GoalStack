@@ -17,5 +17,5 @@ mvn clean package -DskipTests
 Write-Host ""
 Write-Host "Done. Run it with:"
 Write-Host "  `$env:DB_PASSWORD = 'your_mysql_password'"
-Write-Host "  java -jar target\goalstack-0.2.0-SNAPSHOT.jar"
+Write-Host "  java -jar target\goalstack-0.3.0-SNAPSHOT.jar"
 Write-Host "Then open http://localhost:8080"

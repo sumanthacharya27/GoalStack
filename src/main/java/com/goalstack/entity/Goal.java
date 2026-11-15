@@ -1,19 +1,6 @@
 package com.goalstack.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -47,6 +34,13 @@ public class Goal {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // EQUAL: goals made before Version 3. Every subgoal counts the same, no hours are stored.
+    // EFFORT: goals made in Version 3 or later. Subgoal weight comes from estimated hours.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "weighting_mode", nullable = false, columnDefinition = "VARCHAR(10)")
+    private WeightingMode weightingMode = WeightingMode.EFFORT;
+
+
     // The owner of this goal. Nullable in the database so goals created in Version 1 (before accounts
     // existed) can still be stored; the service always sets it for new goals.
     @ManyToOne(fetch = FetchType.LAZY)
@@ -70,6 +64,7 @@ public class Goal {
     void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
     /** Marks the goal as changed now. Called when one of its subgoals changes. */
     public void touch() {
         this.updatedAt = LocalDateTime.now();
@@ -85,6 +80,9 @@ public class Goal {
 
     public LocalDate getDeadline() { return deadline; }
     public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
+
+    public WeightingMode getWeightingMode() { return weightingMode; }
+    public void setWeightingMode(WeightingMode weightingMode) { this.weightingMode = weightingMode; }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
@@ -103,5 +101,7 @@ public class Goal {
         subgoals.remove(subgoal);
         subgoal.setGoal(null);
     }
+
+
 
 }

@@ -1,10 +1,13 @@
 package com.goalstack.controller;
 
+import com.goalstack.dto.GoalView;
 import com.goalstack.dto.StatusRequest;
+import com.goalstack.dto.StatusResponse;
 import com.goalstack.dto.SubgoalRequest;
 import com.goalstack.dto.SubgoalResponse;
 import com.goalstack.entity.Subgoal;
 import com.goalstack.security.CurrentUser;
+import com.goalstack.service.GoalService;
 import com.goalstack.service.SubgoalService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,9 +28,11 @@ import java.security.Principal;
 public class SubgoalController {
 
     private final SubgoalService subgoalService;
+    private final GoalService goalService;
 
-    public SubgoalController(SubgoalService subgoalService) {
+    public SubgoalController(SubgoalService subgoalService, GoalService goalService) {
         this.subgoalService = subgoalService;
+        this.goalService = goalService;
     }
 
     @PostMapping("/api/goals/{goalId}/subgoals")
@@ -50,10 +55,12 @@ public class SubgoalController {
     }
 
     @PatchMapping("/api/subgoals/{id}/status")
-    public SubgoalResponse updateStatus(@PathVariable Long id, @RequestBody StatusRequest request,
-                                        Principal principal) {
-        return SubgoalResponse.from(
-                subgoalService.updateStatus(CurrentUser.id(principal), id, request.getStatus()));
+    public StatusResponse updateStatus(@PathVariable Long id, @RequestBody StatusRequest request,
+                                       Principal principal) {
+        Long userId = CurrentUser.id(principal);
+        Subgoal updated = subgoalService.updateStatus(userId, id, request.getStatus());
+        GoalView goal = goalService.getGoalView(userId, updated.getGoal().getId());
+        return new StatusResponse(SubgoalResponse.from(updated), goal.getProgress(), goal.isComplete());
     }
 
     @DeleteMapping("/api/subgoals/{id}")

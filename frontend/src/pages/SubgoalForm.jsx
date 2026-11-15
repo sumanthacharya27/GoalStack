@@ -13,7 +13,8 @@ export default function SubgoalForm() {
 
     const [goalId, setGoalId] = useState(goalIdParam || null);
     const [goalTitle, setGoalTitle] = useState("");
-    const [form, setForm] = useState({ title: "", description: "", status: "PENDING" });
+    const [weightingMode, setWeightingMode] = useState("EFFORT");
+    const [form, setForm] = useState({ title: "", description: "", status: "PENDING", estimatedHours: "" });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
@@ -27,10 +28,16 @@ export default function SubgoalForm() {
                     const subgoal = await api.getSubgoal(id);
                     parentId = subgoal.goalId;
                     setGoalId(parentId);
-                    setForm({ title: subgoal.title, description: subgoal.description || "", status: subgoal.status });
+                    setForm({
+                        title: subgoal.title,
+                        description: subgoal.description || "",
+                        status: subgoal.status,
+                        estimatedHours: subgoal.estimatedHours ?? "",
+                    });
                 }
                 const goal = await api.getGoal(parentId);
                 setGoalTitle(goal.title);
+                setWeightingMode(goal.weightingMode);
             } catch (e) {
                 setError(e.message);
             } finally {
@@ -49,11 +56,23 @@ export default function SubgoalForm() {
         setSaving(true);
         setFieldErrors({});
         setError("");
+        // Goals made before effort estimates existed (EQUAL) do not use hours, so none are sent for them.
+        const usesHours = weightingMode === "EFFORT";
+        const hours = form.estimatedHours === "" ? null : Number(form.estimatedHours);
         try {
             if (editing) {
-                await api.updateSubgoal(id, form);
+                await api.updateSubgoal(id, {
+                    title: form.title,
+                    description: form.description,
+                    status: form.status,
+                    ...(usesHours ? { estimatedHours: hours } : {}),
+                });
             } else {
-                await api.createSubgoal(goalId, { title: form.title, description: form.description });
+                await api.createSubgoal(goalId, {
+                    title: form.title,
+                    description: form.description,
+                    ...(usesHours ? { estimatedHours: hours } : {}),
+                });
             }
             navigate(`/goals/${goalId}`, { state: { message: editing ? "Subgoal updated." : "Subgoal added." } });
         } catch (err) {
@@ -89,6 +108,16 @@ export default function SubgoalForm() {
                            error={fieldErrors.title} />
                 <TextField id="description" name="description" label="Description" optional multiline rows={3}
                            value={form.description} onChange={handleChange} error={fieldErrors.description} />
+
+                {weightingMode === "EFFORT" ? (
+                    <TextField id="estimatedHours" name="estimatedHours" type="number" label="Estimated hours" required
+                               min={0.25} max={1000} step={0.25} value={form.estimatedHours} onChange={handleChange}
+                               error={fieldErrors.estimatedHours} />
+                ) : (
+                    <p className="text-muted small">
+                        This goal was created before effort estimates existed, so every subgoal counts the same.
+                    </p>
+                )}
 
                 {editing ? (
                     <div className="mb-3">

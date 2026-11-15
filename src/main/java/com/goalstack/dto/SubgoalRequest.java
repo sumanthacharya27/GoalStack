@@ -1,10 +1,14 @@
 package com.goalstack.dto;
 
-import com.goalstack.entity.Subgoal;
 import com.goalstack.entity.SubgoalStatus;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
 
 /** JSON body for creating or updating a subgoal. Status is ignored on creation (always PENDING). */
 public class SubgoalRequest {
@@ -16,6 +20,12 @@ public class SubgoalRequest {
     @Size(max = 5000, message = "Description must be 5000 characters or fewer.")
     private String description;
 
+    // Required for goals made in Version 3 or later; not used for older goals. The service checks which applies.
+    @DecimalMin(value = "0.25", message = "Estimated hours must be at least 0.25.")
+    @DecimalMax(value = "1000.00", message = "Estimated hours must be 1000 or fewer.")
+    @Digits(integer = 4, fraction = 2, message = "Use at most 2 decimal places.")
+    private BigDecimal estimatedHours;
+
     @NotNull(message = "Status is required.")
     private SubgoalStatus status = SubgoalStatus.PENDING;
 
@@ -25,17 +35,9 @@ public class SubgoalRequest {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public BigDecimal getEstimatedHours() { return estimatedHours; }
+    public void setEstimatedHours(BigDecimal estimatedHours) { this.estimatedHours = estimatedHours; }
+
     public SubgoalStatus getStatus() { return status; }
     public void setStatus(SubgoalStatus status) { this.status = status; }
-
-    public static SubgoalRequest from(Subgoal subgoal) {
-        SubgoalRequest request = new SubgoalRequest();
-
-        request.setTitle(subgoal.getTitle());
-        request.setDescription(subgoal.getDescription());
-        request.setStatus(subgoal.getStatus());
-
-        return request;
-    }
-
 }

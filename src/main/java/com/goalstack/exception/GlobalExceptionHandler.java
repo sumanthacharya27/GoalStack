@@ -59,6 +59,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of());
     }
 
+    @ExceptionHandler(ValidationFailedException.class)
+    public ResponseEntity<ApiError> handleValidationFailed(ValidationFailedException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), ex.getFieldErrors());
+    }
+
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ResponseEntity<ApiError> handleEmailTaken(EmailAlreadyUsedException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), Map.of("email", ex.getMessage()));

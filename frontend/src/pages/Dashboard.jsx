@@ -4,15 +4,28 @@ import { api } from "../api.js";
 import Alerts from "../components/Alerts.jsx";
 import DeadlineLabel from "../components/DeadlineLabel.jsx";
 import ProgressBar from "../components/ProgressBar.jsx";
+import { formatHours, formatPercent } from "../utils.js";
 
 export default function Dashboard() {
     const location = useLocation();
     const [goals, setGoals] = useState(null);
     const [error, setError] = useState("");
+    const [search, setSearch] = useState("");
+    const [filter, setFilter] = useState("all");
 
     useEffect(() => {
         api.listGoals().then(setGoals).catch((e) => setError(e.message));
     }, []);
+
+    const visibleGoals = (goals || []).filter((goal) => {
+        const matchesSearch = goal.title.toLowerCase().includes(search.trim().toLowerCase());
+        const matchesFilter =
+            filter === "all" ||
+            (filter === "completed" && goal.complete) ||
+            (filter === "overdue" && goal.overdue) ||
+            (filter === "active" && !goal.complete);
+        return matchesSearch && matchesFilter;
+    });
 
     return (
         <>
@@ -37,8 +50,42 @@ export default function Dashboard() {
             )}
 
             {goals !== null && goals.length > 0 && (
+                <div className="row g-2 mb-3">
+                    <div className="col-12 col-md-8">
+                        <input
+                            type="search"
+                            className="form-control"
+                            placeholder="Search goals by title"
+                            aria-label="Search goals by title"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <div className="col-12 col-md-4">
+                        <select
+                            className="form-select"
+                            aria-label="Filter goals"
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                        >
+                            <option value="all">All goals</option>
+                            <option value="active">Not completed</option>
+                            <option value="completed">Completed</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                </div>
+            )}
+
+            {goals !== null && goals.length > 0 && visibleGoals.length === 0 && (
+                <div className="gs-empty text-center">
+                    <p className="text-muted mb-0">No goals match your search or filter.</p>
+                </div>
+            )}
+
+            {goals !== null && visibleGoals.length > 0 && (
                 <div className="row g-3">
-                    {goals.map((goal) => (
+                    {visibleGoals.map((goal) => (
                         <div className="col-12 col-md-6 col-lg-4" key={goal.id}>
                             <div className="card gs-card h-100">
                                 <div className="card-body d-flex flex-column">
@@ -59,9 +106,14 @@ export default function Dashboard() {
                                     <div className="mt-auto">
                                         <div className="d-flex justify-content-between small mb-1">
                                             <span>{goal.completedCount} of {goal.totalCount} subgoals done</span>
-                                            <strong>{goal.progress}%</strong>
+                                            <strong>{formatPercent(goal.progress)}</strong>
                                         </div>
                                         <ProgressBar progress={goal.progress} complete={goal.complete} />
+                                        {goal.totalEstimatedHours !== null && goal.totalEstimatedHours !== undefined && (
+                                            <p className="small text-muted mt-2 mb-0">
+                                                Estimated effort: {formatHours(goal.totalEstimatedHours)}
+                                            </p>
+                                        )}
                                         <div className="mt-3"><DeadlineLabel goal={goal} /></div>
                                     </div>
                                 </div>

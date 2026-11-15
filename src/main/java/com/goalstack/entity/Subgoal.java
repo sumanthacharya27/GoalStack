@@ -17,6 +17,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /** One row in the "subgoals" table. Each subgoal belongs to exactly one Goal. */
@@ -41,8 +42,20 @@ public class Subgoal {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(20) NOT NULL DEFAULT 'PENDING'")
+    @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
     private SubgoalStatus status = SubgoalStatus.PENDING;
+
+    // Effort estimate in hours. Empty for goals made before Version 3.
+    @Column(name = "estimated_hours", precision = 7, scale = 2)
+    private BigDecimal estimatedHours;
+
+    // Share of the goal in percent. Calculated by WeightedProgressService; the weights of a goal total 100.00.
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal weight = new BigDecimal("0.00");
+
+    // Position inside the goal, starting at 1.
+    @Column(name = "sort_order", nullable = false)
+    private int sortOrder;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -75,6 +88,15 @@ public class Subgoal {
 
     public SubgoalStatus getStatus() { return status; }
     public void setStatus(SubgoalStatus status) { this.status = status; }
+
+    public BigDecimal getEstimatedHours() { return estimatedHours; }
+    public void setEstimatedHours(BigDecimal estimatedHours) { this.estimatedHours = estimatedHours; }
+
+    public BigDecimal getWeight() { return weight; }
+    public void setWeight(BigDecimal weight) { this.weight = weight; }
+
+    public int getSortOrder() { return sortOrder; }
+    public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

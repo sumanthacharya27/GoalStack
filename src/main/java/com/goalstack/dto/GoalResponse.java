@@ -2,7 +2,9 @@ package com.goalstack.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.goalstack.entity.Goal;
+import com.goalstack.entity.WeightingMode;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,10 +12,12 @@ import java.util.List;
 /**
  * JSON returned to the React app for one goal, including the calculated values.
  * "subgoals" is only present on the single-goal endpoints, not in the dashboard list.
+ * "progress" is a percentage with two decimals. "totalEstimatedHours" is null for EQUAL (older) goals.
  */
 public record GoalResponse(Long id, String title, String description, LocalDate deadline,
                            LocalDateTime createdAt, LocalDateTime updatedAt,
-                           int completedCount, int totalCount, int progress,
+                           WeightingMode weightingMode, BigDecimal totalEstimatedHours,
+                           int completedCount, int totalCount, BigDecimal progress,
                            boolean complete, boolean overdue,
                            @JsonInclude(JsonInclude.Include.NON_NULL) List<SubgoalResponse> subgoals) {
 
@@ -23,7 +27,8 @@ public record GoalResponse(Long id, String title, String description, LocalDate 
                 ? view.getSubgoals().stream().map(SubgoalResponse::from).toList()
                 : null;
         return new GoalResponse(g.getId(), g.getTitle(), g.getDescription(), g.getDeadline(),
-                g.getCreatedAt(), g.getUpdatedAt(), view.getCompletedCount(), view.getTotalCount(),
-                view.getProgress(), view.isComplete(), view.isOverdue(), subgoals);
+                g.getCreatedAt(), g.getUpdatedAt(), g.getWeightingMode(), view.getTotalEstimatedHours(),
+                view.getCompletedCount(), view.getTotalCount(), view.getProgress(),
+                view.isComplete(), view.isOverdue(), subgoals);
     }
 }

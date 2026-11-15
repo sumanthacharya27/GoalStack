@@ -1,23 +1,26 @@
 package com.goalstack.service;
 
+import com.goalstack.dto.GoalRequest;
 import com.goalstack.dto.GoalView;
 import com.goalstack.entity.Goal;
 import com.goalstack.entity.Subgoal;
 import com.goalstack.entity.SubgoalStatus;
+import com.goalstack.entity.User;
+import com.goalstack.entity.WeightingMode;
 import com.goalstack.exception.ResourceNotFoundException;
 import com.goalstack.repository.GoalRepository;
 import com.goalstack.repository.SubgoalRepository;
 import com.goalstack.repository.UserRepository;
-import com.goalstack.dto.GoalRequest;
-import com.goalstack.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +33,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class GoalServiceTest {
 
+    private static final Long USER_ID = 7L;
+
     @Mock
     private GoalRepository goalRepository;
 
@@ -39,89 +44,87 @@ class GoalServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    private static final Long USER_ID = 7L;
+    private final WeightedProgressService progressService = new WeightedProgressService();
 
-    @InjectMocks
     private GoalService goalService;
 
-    // ----- progress formula -----
-
-    @Test
-    void progressIsZeroWhenThereAreNoSubgoals() {
-        assertThat(GoalService.calculateProgress(0, 0)).isZero();
+    @BeforeEach
+    void setUp() {
+        goalService = new GoalService(goalRepository, subgoalRepository, userRepository, progressService);
     }
 
-    @Test
-    void progressIsCompletedOverTotal() {
-        assertThat(GoalService.calculateProgress(2, 5)).isEqualTo(40);
-    }
+    // ----- completion -----
 
     @Test
-    void progressIsRoundedDownSoOnly100MeansAllDone() {
-        assertThat(GoalService.calculateProgress(1, 3)).isEqualTo(33);
-        assertThat(GoalService.calculateProgress(199, 200)).isEqualTo(99);
-    }
+    void goalWithNoSubgoalsIsNotCompleteAndHasZeroProgress() {
+        GoalView view = viewFor(goal(null, WeightingMode.EFFORT), List.of());
 
-    @Test
-    void progressIs100WhenEverythingIsCompleted() {
-        assertThat(GoalService.calculateProgress(4, 4)).isEqualTo(100);
-    }
-
-    @Test
-    void reopeningASubgoalLowersProgress() {
-        int before = GoalService.calculateProgress(3, 4);
-        int after = GoalService.calculateProgress(2, 4);
-        assertThat(after).isLessThan(before);
-    }
-
-    // ----- view built from subgoal statuses -----
-
-    @Test
-    void inProgressSubgoalsDoNotCountAsCompleted() {
-        GoalView view = viewFor(goal(null), List.of(
-                sub(SubgoalStatus.COMPLETED), sub(SubgoalStatus.COMPLETED),
-                sub(SubgoalStatus.IN_PROGRESS), sub(SubgoalStatus.PENDING), sub(SubgoalStatus.PENDING)));
-
-        assertThat(view.getProgress()).isEqualTo(40);
-        assertThat(view.getCompletedCount()).isEqualTo(2);
-        assertThat(view.getTotalCount()).isEqualTo(5);
-        assertThat(view.isComplete()).isFalse();
-    }
-
-    @Test
-    void goalWithNoSubgoalsIsNotComplete() {
-        GoalView view = viewFor(goal(null), List.of());
-
-        assertThat(view.getProgress()).isZero();
+        assertThat(view.getProgress()).isEqualByComparingTo("0.00");
         assertThat(view.isComplete()).isFalse();
     }
 
     @Test
     void goalIsCompleteWhenAllSubgoalsAreCompleted() {
-        GoalView view = viewFor(goal(null), List.of(sub(SubgoalStatus.COMPLETED), sub(SubgoalStatus.COMPLETED)));
+        GoalView view = viewFor(goal(null, WeightingMode.EFFORT),
+                subs(WeightingMode.EFFORT, "10", SubgoalStatus.COMPLETED, "30", SubgoalStatus.COMPLETED));
 
-        assertThat(view.getProgress()).isEqualTo(100);
+        assertThat(view.getProgress()).isEqualByComparingTo("100.00");
         assertThat(view.isComplete()).isTrue();
+    }
+
+    // ----- weighted progress in the view -----
+
+    @Test
+    void effortGoalProgressFollowsTheHoursNotTheNumberOfSubgoals() {
+        GoalView view = viewFor(goal(null, WeightingMode.EFFORT), subs(WeightingMode.EFFORT,
+                "10", SubgoalStatus.COMPLETED,
+                "25", SubgoalStatus.COMPLETED,
+                "15", SubgoalStatus.IN_PROGRESS,
+                "35", SubgoalStatus.PENDING,
+                "15", SubgoalStatus.PENDING));
+
+        assertThat(view.getProgress()).isEqualByComparingTo("35.00");
+        assertThat(view.getCompletedCount()).isEqualTo(2);
+        assertThat(view.getTotalCount()).isEqualTo(5);
+        assertThat(view.getTotalEstimatedHours()).isEqualByComparingTo("100.00");
+        assertThat(view.isComplete()).isFalse();
+    }
+
+    @Test
+    void olderGoalsShareTheWeightEquallyAndHaveNoTotalHours() {
+        GoalView view = viewFor(goal(null, WeightingMode.EQUAL), subs(WeightingMode.EQUAL,
+                null, SubgoalStatus.COMPLETED,
+                null, SubgoalStatus.COMPLETED,
+                null, SubgoalStatus.IN_PROGRESS,
+                null, SubgoalStatus.PENDING,
+                null, SubgoalStatus.PENDING));
+
+        assertThat(view.getProgress()).isEqualByComparingTo("40.00");
+        assertThat(view.getTotalEstimatedHours()).isNull();
     }
 
     // ----- overdue rules -----
 
     @Test
     void incompleteGoalWithPastDeadlineIsOverdue() {
-        GoalView view = viewFor(goal(LocalDate.now().minusDays(1)), List.of(sub(SubgoalStatus.PENDING)));
+        GoalView view = viewFor(goal(LocalDate.now().minusDays(1), WeightingMode.EFFORT),
+                subs(WeightingMode.EFFORT, "5", SubgoalStatus.PENDING));
         assertThat(view.isOverdue()).isTrue();
     }
 
     @Test
     void completedGoalIsNeverOverdue() {
-        GoalView view = viewFor(goal(LocalDate.now().minusDays(1)), List.of(sub(SubgoalStatus.COMPLETED)));
+        GoalView view = viewFor(goal(LocalDate.now().minusDays(1), WeightingMode.EFFORT),
+                subs(WeightingMode.EFFORT, "5", SubgoalStatus.COMPLETED));
         assertThat(view.isOverdue()).isFalse();
     }
 
     @Test
     void goalWithoutDeadlineOrWithFutureDeadlineIsNotOverdue() {
-        assertThat(viewFor(goal(null), List.of(sub(SubgoalStatus.PENDING))).isOverdue()).isFalse();
-        assertThat(viewFor(goal(LocalDate.now().plusDays(3)), List.of(sub(SubgoalStatus.PENDING))).isOverdue()).isFalse();
+        assertThat(viewFor(goal(null, WeightingMode.EFFORT),
+                subs(WeightingMode.EFFORT, "5", SubgoalStatus.PENDING)).isOverdue()).isFalse();
+        assertThat(viewFor(goal(LocalDate.now().plusDays(3), WeightingMode.EFFORT),
+                subs(WeightingMode.EFFORT, "5", SubgoalStatus.PENDING)).isOverdue()).isFalse();
     }
 
     @Test
@@ -129,7 +132,7 @@ class GoalServiceTest {
         assertThat(GoalService.isOverdue(LocalDate.of(2026, 1, 10), false, LocalDate.of(2026, 1, 10))).isFalse();
     }
 
-    // ----- missing data -----
+    // ----- missing data and ownership -----
 
     @Test
     void deletingAMissingGoalThrowsNotFound() {
@@ -137,8 +140,6 @@ class GoalServiceTest {
 
         assertThatThrownBy(() -> goalService.deleteGoal(USER_ID, 99L)).isInstanceOf(ResourceNotFoundException.class);
     }
-
-    // ----- ownership -----
 
     @Test
     void aGoalOfAnotherUserLooksLikeItDoesNotExist() {
@@ -149,7 +150,7 @@ class GoalServiceTest {
     }
 
     @Test
-    void newGoalsBelongToTheLoggedInUser() {
+    void newGoalsBelongToTheLoggedInUserAndUseEffortWeights() {
         User owner = new User();
         when(userRepository.getReferenceById(USER_ID)).thenReturn(owner);
         when(goalRepository.save(any(Goal.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -160,52 +161,74 @@ class GoalServiceTest {
 
         assertThat(saved.getUser()).isSameAs(owner);
         assertThat(saved.getTitle()).isEqualTo("Learn Java");
+        assertThat(saved.getWeightingMode()).isEqualTo(WeightingMode.EFFORT);
     }
 
-    // ----- dashboard (grouped counts) -----
+    // ----- dashboard (grouped rows: goalId, status, count, sum of weights, sum of hours) -----
 
     @Test
-    void dashboardProgressComesFromTheGroupedCounts() {
-        Goal withSubgoals = goal(null);
-        ReflectionTestUtils.setField(withSubgoals, "id", 1L);
-        Goal empty = goal(null);
-        ReflectionTestUtils.setField(empty, "id", 2L);
+    void dashboardProgressAndHoursComeFromTheGroupedRows() {
+        Goal effortGoal = goalWithId(1L, WeightingMode.EFFORT);
+        Goal olderGoal = goalWithId(2L, WeightingMode.EQUAL);
+        Goal emptyGoal = goalWithId(3L, WeightingMode.EFFORT);
         List<Object[]> rows = List.of(
-                new Object[]{1L, SubgoalStatus.COMPLETED, 2L},
-                new Object[]{1L, SubgoalStatus.PENDING, 2L});
+                new Object[]{1L, SubgoalStatus.COMPLETED, 2L, new BigDecimal("40.00"), new BigDecimal("20.00")},
+                new Object[]{1L, SubgoalStatus.PENDING, 3L, new BigDecimal("60.00"), new BigDecimal("30.00")},
+                new Object[]{2L, SubgoalStatus.COMPLETED, 1L, new BigDecimal("33.34"), null},
+                new Object[]{2L, SubgoalStatus.PENDING, 2L, new BigDecimal("66.66"), null});
         when(subgoalRepository.countByGoalAndStatusForUser(USER_ID)).thenReturn(rows);
-        when(goalRepository.findByUserIdOrderByCreatedAtDesc(USER_ID)).thenReturn(List.of(withSubgoals, empty));
+        when(goalRepository.findByUserIdOrderByCreatedAtDesc(USER_ID)).thenReturn(List.of(effortGoal, olderGoal, emptyGoal));
 
         List<GoalView> views = goalService.getAllGoalViews(USER_ID);
 
-        assertThat(views).hasSize(2);
-        assertThat(views.get(0).getTotalCount()).isEqualTo(4);
+        assertThat(views).hasSize(3);
+        assertThat(views.get(0).getProgress()).isEqualByComparingTo("40.00");
         assertThat(views.get(0).getCompletedCount()).isEqualTo(2);
-        assertThat(views.get(0).getProgress()).isEqualTo(50);
-        assertThat(views.get(1).getTotalCount()).isZero();
-        assertThat(views.get(1).getProgress()).isZero();
-        assertThat(views.get(1).isComplete()).isFalse();
+        assertThat(views.get(0).getTotalCount()).isEqualTo(5);
+        assertThat(views.get(0).getTotalEstimatedHours()).isEqualByComparingTo("50.00");
+
+        assertThat(views.get(1).getProgress()).isEqualByComparingTo("33.34");
+        assertThat(views.get(1).getTotalEstimatedHours()).isNull();
+
+        assertThat(views.get(2).getTotalCount()).isZero();
+        assertThat(views.get(2).getProgress()).isEqualByComparingTo("0.00");
+        assertThat(views.get(2).isComplete()).isFalse();
     }
 
     // ----- helpers -----
 
     private GoalView viewFor(Goal goal, List<Subgoal> subgoals) {
         when(goalRepository.findByIdAndUserId(1L, USER_ID)).thenReturn(Optional.of(goal));
-        when(subgoalRepository.findByGoalIdOrderByIdAsc(1L)).thenReturn(subgoals);
+        when(subgoalRepository.findByGoalIdOrderBySortOrderAscIdAsc(1L)).thenReturn(subgoals);
         return goalService.getGoalView(USER_ID, 1L);
     }
 
-    private Goal goal(LocalDate deadline) {
+    private Goal goal(LocalDate deadline, WeightingMode mode) {
         Goal goal = new Goal();
         goal.setTitle("Learn Java");
         goal.setDeadline(deadline);
+        goal.setWeightingMode(mode);
         return goal;
     }
 
-    private Subgoal sub(SubgoalStatus status) {
-        Subgoal subgoal = new Subgoal();
-        subgoal.setTitle("Step");
-        subgoal.setStatus(status);
-        return subgoal;
+    private Goal goalWithId(Long id, WeightingMode mode) {
+        Goal goal = goal(null, mode);
+        ReflectionTestUtils.setField(goal, "id", id);
+        return goal;
+    }
+
+    /** Arguments alternate: hours (or null), status... Weights are set like the real service does. */
+    private List<Subgoal> subs(WeightingMode mode, Object... hoursAndStatus) {
+        List<Subgoal> list = new ArrayList<>();
+        for (int i = 0; i < hoursAndStatus.length; i += 2) {
+            Subgoal subgoal = new Subgoal();
+            subgoal.setTitle("Step");
+            String hours = (String) hoursAndStatus[i];
+            subgoal.setEstimatedHours(hours == null ? null : new BigDecimal(hours));
+            subgoal.setStatus((SubgoalStatus) hoursAndStatus[i + 1]);
+            list.add(subgoal);
+        }
+        progressService.applyWeights(mode, list);
+        return list;
     }
 }

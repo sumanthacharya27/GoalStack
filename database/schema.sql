@@ -1,5 +1,6 @@
--- OPTIONAL manual schema for GoalStack Version 2 (MySQL 8).
--- The app also creates/updates these tables itself (spring.jpa.hibernate.ddl-auto=update).
+-- OPTIONAL manual copy of the GoalStack schema as of Version 3 phase 1 (MySQL 8).
+-- Normally you do not need this: Flyway (src/main/resources/db/migration) builds the schema when the app starts.
+-- Do not run this and then start the app on the same database unless you also want Flyway to baseline it.
 -- Run with:  mysql -u root -p < database\schema.sql
 
 CREATE DATABASE IF NOT EXISTS goalstack CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS goals (
                                      title       VARCHAR(120) NOT NULL,
     description TEXT         NULL,
     deadline    DATE         NULL,
+    weighting_mode VARCHAR(10) NOT NULL,
     created_at  DATETIME     NOT NULL,
     updated_at  DATETIME     NOT NULL,
     PRIMARY KEY (id),
@@ -36,10 +38,16 @@ CREATE TABLE IF NOT EXISTS subgoals (
                                         title       VARCHAR(120) NOT NULL,
     description TEXT         NULL,
     status      VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
+    estimated_hours DECIMAL(7,2) NULL,
+    weight      DECIMAL(5,2) NOT NULL,
+    sort_order  INT          NOT NULL,
     created_at  DATETIME     NOT NULL,
     updated_at  DATETIME     NOT NULL,
     PRIMARY KEY (id),
     INDEX idx_subgoals_goal_id (goal_id),
     CONSTRAINT fk_subgoals_goal FOREIGN KEY (goal_id) REFERENCES goals (id) ON DELETE CASCADE,
-    CONSTRAINT chk_subgoals_status CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED'))
+    CONSTRAINT chk_subgoals_status CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED')),
+    CONSTRAINT chk_subgoals_hours  CHECK (estimated_hours IS NULL OR (estimated_hours >= 0.25 AND estimated_hours <= 1000)),
+    CONSTRAINT chk_subgoals_weight CHECK (weight >= 0 AND weight <= 100),
+    INDEX idx_subgoals_goal_order (goal_id, sort_order)
     ) ENGINE=InnoDB;

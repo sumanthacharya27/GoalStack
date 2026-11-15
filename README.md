@@ -1,4 +1,4 @@
-# GoalStack (Version 2)
+# GoalStack (Version 3, phase 1: effort-weighted progress)
 
 A goal management web app with user accounts. Each user creates goals, splits them into subgoals, sets optional deadlines, and sees progress calculated automatically. Users only see their own goals.
 
@@ -12,7 +12,7 @@ Large goals are hard to finish when they are not broken into small steps. GoalSt
 **Version 1 (still included)**
 - Create, view, edit and delete goals (title, optional description, optional deadline); deleting a goal deletes its subgoals
 - Add, edit, delete subgoals and change their status (Pending, In progress, Completed)
-- Progress = completed subgoals / total subgoals x 100 (rounded down), calculated on the server and never stored
+- Progress is calculated on the server and never stored (see "How progress works" below)
 - Complete only when there is at least one subgoal and all are completed; Overdue when the deadline has passed and the goal is not complete
 - Dashboard with goal cards, progress bars, title search, status filter, loading and empty states
 - Server-side validation with messages under each field; clean JSON errors; delete confirmations
@@ -22,6 +22,13 @@ Large goals are hard to finish when they are not broken into small steps. GoalSt
 - Every goal belongs to one user; other users' goals and subgoals return "not found"
 - React login and register pages, pages that need login, user name and Log out in the navbar, automatic logout when the token expires
 - Run everything from one jar (Spring Boot serves the React app) or with Docker Compose
+
+**New in Version 3, phase 1**
+- Effort-weighted progress: each subgoal of a new goal has estimated hours (0.25 to 1000, at most 50 subgoals per goal); its weight is its share of the total hours, and progress is the sum of the weights of completed subgoals
+- Weights are calculated on the server, always total exactly 100.00%, and are recalculated when a subgoal is added, deleted or its hours change
+- Goals made before Version 3 keep equal weights forever (no hours); the app tells you so on the goal page
+- Database changes are now managed by Flyway migration files instead of Hibernate `update`
+- Planned next (not built yet): AI planning chat with a local Ollama model
 
 Not included: refresh tokens, password reset, email verification, roles, rate limiting, nested subgoals, notifications.
 
@@ -72,12 +79,20 @@ React (browser) --JSON + Bearer token--> Security filter -> Controller -> Servic
 
 Dates use `yyyy-MM-dd`. Errors look like `{"status":400,"message":"...","fieldErrors":{"title":"Title is required."}}`. Without a valid token, `/api/**` (except register and login) answers 401. Duplicate email answers 409, wrong login answers 401.
 
+## How progress works
+- **New goals (EFFORT):** weight of a subgoal = its hours / total hours of the goal x 100. Example: hours 10, 25, 15, 35, 15 give weights 10, 25, 15, 35, 15. If the first two are completed, progress is 35%, not 40%.
+- **Older goals (EQUAL):** every subgoal has the same weight (3 subgoals: 33.34, 33.33, 33.33).
+- Weights use exact whole hundredths of a percent with the largest-remainder rule: everybody gets the rounded-down value, and the leftover hundredths go to the biggest remainders (ties: the earlier subgoal). So the weights always total exactly 100.00 and the same input always gives the same output.
+- Progress = sum of the weights of COMPLETED subgoals. IN_PROGRESS does not count. All completed gives exactly 100.00. The screen shows it rounded down to one decimal.
+- A goal is complete only with at least one subgoal and all of them completed. Overdue works as before.
+- Edge case: a very small subgoal next to very large ones (for example 0.25 hours among 49 subgoals of 1000 hours) can get a weight of 0.00%.
+
 ## Database
-Three tables, created or updated automatically by Hibernate (`spring.jpa.hibernate.ddl-auto=update`). A manual script is in `database/schema.sql`. Spring's own SQL initialisation is off (`spring.sql.init.mode=never`).
+Three tables. The structure is managed by **Flyway**: the files in `src/main/resources/db/migration` run in order on startup (`V1` creates the Version 2 tables for a brand new database, `V2` adds the weighted-progress columns). Hibernate no longer changes tables (`ddl-auto=none`). Set the environment variable `DDL_AUTO=validate` to make Hibernate double-check entities against tables while developing. `database/schema.sql` is a manual copy of the final schema. Spring's own SQL initialisation is off.
 
 - `users(id, name, email UNIQUE, password_hash, created_at)`
-- `goals(id, user_id, title, description, deadline, created_at, updated_at)`
-- `subgoals(id, goal_id, title, description, status, created_at, updated_at)`
+- `goals(id, user_id, title, description, deadline, weighting_mode, created_at, updated_at)`: `weighting_mode` is EQUAL for goals made before Version 3, EFFORT for new goals
+- `subgoals(id, goal_id, title, description, status, estimated_hours, weight, sort_order, created_at, updated_at)`: `estimated_hours` is empty for older goals; `weight` and `sort_order` are always set
 - A user has many goals; a goal has many subgoals. Both foreign keys use `ON DELETE CASCADE`.
 - `goals.user_id` is nullable in the database so Version 1 goals can still be stored; the app always sets it for new goals.
 - Progress is never stored.
@@ -119,7 +134,7 @@ cd goalstack
 .\build-single-jar.ps1
 $env:DB_PASSWORD = "your_mysql_password"
 $env:JWT_SECRET = "replace-this-with-a-long-random-text-32-chars-or-more"
-java -jar target\goalstack-0.2.0-SNAPSHOT.jar
+java -jar target\goalstack-0.3.0-SNAPSHOT.jar
 ```
 Open http://localhost:8080. If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process Bypass` first.
 
@@ -131,13 +146,15 @@ docker compose up --build
 Open http://localhost:8080. MySQL data is kept in a Docker volume.
 
 ## Tests
-`mvn test` runs 42 tests (no MySQL needed; the repository test uses in-memory H2).
+`mvn test` runs 70 tests (no MySQL needed; the repository test uses in-memory H2 with Flyway switched off, because the migration files are written for MySQL).
 
-## Upgrading from Version 1
-1. Start the new version. Hibernate adds the `users` table and the `goals.user_id` column.
-2. Register an account in the app.
-3. Your old goals have no owner and are invisible. Edit the email in `database\claim_v1_goals.sql`, then run `mysql -u root -p goalstack < database\claim_v1_goals.sql`.
-4. If you do not need the old data, you can instead drop the `goalstack` database and let the app recreate it.
+## Upgrading an existing database
+Back up first: `mysqldump -u root -p goalstack > backup.sql`
+
+- **Your database was created by Version 1** (no `users` table): run `mysql -u root -p goalstack < database\upgrade_v1_to_v2.sql` once, start the app, register an account, then run `database\claim_v1_goals.sql` (edit the email inside) so your old goals belong to that account.
+- **Your database was created by Version 2:** just start the app. Flyway marks it as version 1 and adds the new columns. Every existing goal becomes an EQUAL (equal-weight) goal and its subgoals get equal weights.
+- **You do not need the old data:** drop the `goalstack` database and start the app; Flyway builds everything.
+- If the first start stops with `Table '...users' doesn't exist`, your database is still at Version 1; run the upgrade script above. Nothing was changed by the failed migration.
 
 ## Try the API from PowerShell
 ```powershell
